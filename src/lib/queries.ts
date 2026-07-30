@@ -45,7 +45,7 @@ export interface SetRow {
 export function erasWithSets() {
   const db = getDb();
   const eras = db.select().from(tables.eras).orderBy(asc(tables.eras.sortOrder)).all();
-  const sets = db.all<SetRow & { isSupplemental: number }>(sql`
+  const sets = db.all<Omit<SetRow, "isSupplemental"> & { isSupplemental: number }>(sql`
     select group_id as groupId, era_id as eraId, name, slug, release_date as releaseDate,
            is_supplemental as isSupplemental, logo_url as logoUrl, card_count as cardCount
     from sets order by release_date desc nulls last, name
