@@ -22,11 +22,11 @@ export function SetLogo({
   }
   return (
     <div
-      className={`${className} flex items-center justify-center rounded-lg px-3 font-display text-lg font-bold text-white`}
+      className={`${className} flex max-w-full items-center justify-center overflow-hidden rounded-lg px-3 font-display text-sm font-bold whitespace-nowrap text-white`}
       style={{ background: accent ?? "var(--poke-blue)" }}
       aria-hidden="true"
     >
-      {name.replace(/^[A-Z]+\d*:\s*/i, "").slice(0, 22)}
+      <span className="truncate">{name.replace(/^[A-Z]+\d*:\s*/i, "").slice(0, 18)}</span>
     </div>
   );
 }

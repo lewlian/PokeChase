@@ -71,13 +71,18 @@ export function setBySlug(slug: string) {
 }
 
 export function newestSets(limit = 6) {
+  // TCGplayer's publishedOn is sometimes the catalog-entry date, not the set
+  // release (old POP/promo groups carry modern dates). Guard: a set only counts
+  // as "new" if its date fits inside its era's window (+1y grace).
   const db = getDb();
   return db.all<SetRow>(sql`
-    select group_id as groupId, era_id as eraId, name, slug, release_date as releaseDate,
-           is_supplemental as isSupplemental, logo_url as logoUrl, card_count as cardCount
-    from sets
-    where is_supplemental = 0 and release_date is not null
-    order by release_date desc limit ${limit}
+    select s.group_id as groupId, s.era_id as eraId, s.name, s.slug,
+           s.release_date as releaseDate, s.is_supplemental as isSupplemental,
+           s.logo_url as logoUrl, s.card_count as cardCount
+    from sets s join eras e on e.id = s.era_id
+    where s.is_supplemental = 0 and s.release_date is not null
+      and (e.end_year is null or cast(substr(s.release_date, 1, 4) as integer) <= e.end_year + 1)
+    order by s.release_date desc limit ${limit}
   `);
 }
 
