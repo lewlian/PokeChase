@@ -1,5 +1,17 @@
 import { describe, it, expect } from "vitest";
-import { slugify, money, pct, sortNumber, shortDate } from "@/lib/format";
+import { askPremiumPct, slugify, money, pct, sortNumber, shortDate } from "@/lib/format";
+
+describe("askPremiumPct", () => {
+  it("computes premium above and below market", () => {
+    expect(askPremiumPct(110, 100)).toBeCloseTo(10);
+    expect(askPremiumPct(90, 100)).toBeCloseTo(-10);
+  });
+  it("null when either side is missing or zero", () => {
+    expect(askPremiumPct(null, 100)).toBeNull();
+    expect(askPremiumPct(50, null)).toBeNull();
+    expect(askPremiumPct(50, 0)).toBeNull();
+  });
+});
 
 describe("slugify", () => {
   it("handles prefixes and punctuation", () => {

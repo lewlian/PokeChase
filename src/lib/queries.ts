@@ -196,12 +196,13 @@ export interface VariantPrice {
   mid: number | null;
   high: number | null;
   market: number | null;
+  directLow: number | null;
 }
 
 export function latestVariantPrices(productId: number): VariantPrice[] {
   const db = getDb();
   return db.all<VariantPrice>(sql`
-    select sub_type as subType, date, low, mid, high, market
+    select sub_type as subType, date, low, mid, high, market, direct_low as directLow
     from price_snapshots
     where product_id = ${productId}
       and date = (select max(date) from price_snapshots where product_id = ${productId})

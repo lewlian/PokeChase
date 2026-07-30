@@ -39,6 +39,15 @@ export function yearOf(iso: string | null | undefined): string {
   return iso ? iso.slice(0, 4) : "—";
 }
 
+/** % the cheapest current ask sits above (+) or below (−) market price. */
+export function askPremiumPct(
+  ask: number | null | undefined,
+  market: number | null | undefined,
+): number | null {
+  if (!ask || !market) return null;
+  return ((ask - market) / market) * 100;
+}
+
 /** Extract sortable numeric card number from display number like "199/165" or "TG12/TG30". */
 export function sortNumber(display: string | null | undefined): number | null {
   if (!display) return null;

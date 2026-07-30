@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { AskTable } from "@/components/AskTable";
 import { PriceChart } from "@/components/PriceChart";
 import { TierBadge } from "@/components/TierBadge";
 import { Delta } from "@/components/Delta";
@@ -98,46 +99,31 @@ export default async function CardPage({ params }: Props) {
                 </div>
               </div>
             ) : null}
-            <a
-              href={card.tcgplayerUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ml-auto rounded-full bg-pokeblue px-5 py-2 text-sm font-semibold text-white hover:opacity-90"
-            >
-              View on TCGplayer ↗
-            </a>
+            <div className="ml-auto flex flex-col items-end gap-2">
+              <a
+                href={card.tcgplayerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full bg-pokeblue px-5 py-2 text-sm font-semibold text-white hover:opacity-90"
+              >
+                View on TCGplayer ↗
+              </a>
+              <a
+                href={card.tcgplayerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-medium text-pokeblue hover:underline"
+                title="TCGplayer shows recent completed sales on the product page"
+              >
+                View latest sales on TCGplayer ↗
+              </a>
+            </div>
           </div>
 
-          {variants.length > 0 ? (
-            <div className="overflow-x-auto rounded-2xl border border-line bg-surface">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-mut">
-                    <th className="px-4 py-2">Variant</th>
-                    <th className="px-4 py-2 text-right">Low</th>
-                    <th className="px-4 py-2 text-right">Mid</th>
-                    <th className="px-4 py-2 text-right">High</th>
-                    <th className="px-4 py-2 text-right">Market</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {variants.map((v) => (
-                    <tr key={v.subType} className="border-b border-line last:border-0">
-                      <td className="px-4 py-2 font-medium">{v.subType}</td>
-                      <td className="px-4 py-2 text-right tabular-nums">{money(v.low)}</td>
-                      <td className="px-4 py-2 text-right tabular-nums">{money(v.mid)}</td>
-                      <td className="px-4 py-2 text-right tabular-nums">{money(v.high)}</td>
-                      <td className="px-4 py-2 text-right font-bold tabular-nums">{money(v.market)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p className="rounded-xl border border-line bg-surface p-4 text-sm text-mut">
-              No current price recorded for this card.
-            </p>
-          )}
+          <section>
+            <h2 className="mb-2 font-display text-lg font-bold">Market vs. current asks</h2>
+            <AskTable variants={variants} />
+          </section>
         </div>
       </div>
 

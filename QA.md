@@ -61,3 +61,12 @@
 
 `com.pokechase.daily` LaunchAgent installed and loaded (14:05 local daily);
 verified present via `launchctl list`. Manual pipeline run end-to-end exit 0.
+
+## Addendum — ask table & sales links (2026-07-30)
+
+- Added "Market vs. current asks" table (best ask / ask-vs-market % / direct
+  ask / mid / high per variant) to card and sealed product pages, sourced from
+  existing daily snapshots, plus "View latest sales on TCGplayer" outbound
+  links. Verified in-browser (Umbreon VMAX: ask $1,998.67 = −16.9% vs market),
+  zero console errors; 94/94 unit tests; smoke suite extended to assert the new
+  section — 29/29.

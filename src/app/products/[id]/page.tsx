@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { AskTable } from "@/components/AskTable";
 import { PriceChart } from "@/components/PriceChart";
 import { imageAt } from "@/lib/images";
 import { money } from "@/lib/format";
@@ -85,15 +86,31 @@ export default async function ProductPage({ params }: Props) {
                 </div>
               </div>
             ) : null}
-            <a
-              href={product.tcgplayerUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ml-auto rounded-full bg-pokeblue px-5 py-2 text-sm font-semibold text-white hover:opacity-90"
-            >
-              View on TCGplayer ↗
-            </a>
+            <div className="ml-auto flex flex-col items-end gap-2">
+              <a
+                href={product.tcgplayerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full bg-pokeblue px-5 py-2 text-sm font-semibold text-white hover:opacity-90"
+              >
+                View on TCGplayer ↗
+              </a>
+              <a
+                href={product.tcgplayerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-medium text-pokeblue hover:underline"
+                title="TCGplayer shows recent completed sales on the product page"
+              >
+                View latest sales on TCGplayer ↗
+              </a>
+            </div>
           </div>
+
+          <section>
+            <h2 className="mb-2 font-display text-lg font-bold">Market vs. current asks</h2>
+            <AskTable variants={prices} />
+          </section>
 
           {product.contents.length > 0 ? (
             <div className="rounded-2xl border border-line bg-surface p-5">

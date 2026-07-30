@@ -66,7 +66,7 @@ rm ~/Library/LaunchAgents/com.pokechase.daily.plist
 ### Routes
 
 `/` dashboard · `/sets` era explorer · `/sets/[slug]` (chase / all cards /
-sealed tabs) · `/cards/[id]` price chart + variants · `/products/[id]` contents
+sealed tabs) · `/cards/[id]` price chart, variants + ask table · `/products/[id]` contents
 + per-pack comparison · `/movers` 7-day gainers/losers · `/search` ·
 `/learn`, `/learn/glossary`, `/learn/[guide]` · JSON API:
 `/api/v1/history/[id]`, `/api/v1/meta`.
