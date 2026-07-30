@@ -70,3 +70,15 @@ verified present via `launchctl list`. Manual pipeline run end-to-end exit 0.
   links. Verified in-browser (Umbreon VMAX: ask $1,998.67 = −16.9% vs market),
   zero console errors; 94/94 unit tests; smoke suite extended to assert the new
   section — 29/29.
+
+## Addendum — official sealed contents & layout (2026-07-30)
+
+- Sealed products now store the official TCGplayer product description
+  (TCGCSV `CardText`); a tested parser extracts the "includes:" bullet lists.
+  Coverage: 4,063/4,735 products have descriptions; 1,377 parse to complete
+  official lists (marked "✓ Official contents", incl. guaranteed promos like
+  the Pokémon Center ETB's logo-stamped Eevee). Prose-style older descriptions
+  fall back to labeled templates, with the official blurb shown on product
+  pages. Sealed tab redesigned: contents always visible (no collapse),
+  horizontal cards, 2-col grid. 100/100 unit tests (6 new parser tests),
+  29/29 smoke, zero console errors, browser-verified.

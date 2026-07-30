@@ -182,7 +182,7 @@ function SealedTab({ groupId }: { groupId: number }) {
       {SEALED_TYPE_ORDER.filter((t) => byType.has(t) && t !== "accessory").map((t) => (
         <section key={t}>
           <h2 className="mb-3 font-display text-lg font-bold">{SEALED_TYPE_LABEL[t]}</h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             {byType.get(t)!.map((p) => {
               const packs = typicalPackCount(p.productType, p.name);
               return (

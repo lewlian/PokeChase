@@ -276,12 +276,14 @@ export function sealedById(productId: number) {
     productType: SealedType;
     imageUrl: string;
     tcgplayerUrl: string;
+    description: string | null;
     setName: string;
     setSlug: string;
   }>(sql`
     select sp.product_id as productId, sp.group_id as groupId, sp.name,
            sp.product_type as productType, sp.image_url as imageUrl,
-           sp.tcgplayer_url as tcgplayerUrl, s.name as setName, s.slug as setSlug
+           sp.tcgplayer_url as tcgplayerUrl, sp.description,
+           s.name as setName, s.slug as setSlug
     from sealed_products sp join sets s on s.group_id = sp.group_id
     where sp.product_id = ${productId}
   `);

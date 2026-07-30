@@ -82,6 +82,7 @@ export const sealedProducts = sqliteTable(
     productType: text("product_type").$type<SealedType>().notNull(),
     imageUrl: text("image_url").notNull(),
     tcgplayerUrl: text("tcgplayer_url").notNull(),
+    description: text("description"), // official TCGplayer product copy (HTML-ish)
   },
   (t) => [
     index("sealed_group_idx").on(t.groupId),

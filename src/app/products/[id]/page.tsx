@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { AskTable } from "@/components/AskTable";
 import { PriceChart } from "@/components/PriceChart";
 import { imageAt } from "@/lib/images";
+import { descriptionIntro } from "@/lib/contents";
 import { money } from "@/lib/format";
 import { SEALED_TYPE_LABEL, typicalPackCount } from "@/lib/classify";
 import {
@@ -38,6 +39,7 @@ export default async function ProductPage({ params }: Props) {
     null,
   );
   const history = priceHistory(productId);
+  const intro = descriptionIntro(product.description);
   const packs = typicalPackCount(product.productType, product.name);
   const siblings = sealedForSet(product.groupId)
     .filter((s) => s.productId !== productId && s.productType !== "accessory" && s.market !== null)
@@ -71,6 +73,7 @@ export default async function ProductPage({ params }: Props) {
               {SEALED_TYPE_LABEL[product.productType]}
             </p>
             <h1 className="font-display text-3xl font-bold">{product.name}</h1>
+            {intro ? <p className="mt-2 text-sm leading-relaxed text-mut">{intro}</p> : null}
           </header>
 
           <div className="flex flex-wrap items-center gap-6 rounded-2xl border border-line bg-surface p-5">
@@ -114,17 +117,35 @@ export default async function ProductPage({ params }: Props) {
 
           {product.contents.length > 0 ? (
             <div className="rounded-2xl border border-line bg-surface p-5">
-              <h2 className="mb-2 font-display text-lg font-bold">What&apos;s inside</h2>
-              <ul className="list-disc space-y-1 pl-5 text-sm">
+              <div className="mb-3 flex items-baseline justify-between gap-3">
+                <h2 className="font-display text-lg font-bold">What&apos;s inside</h2>
+                {product.contents.every((c) => c.verified) ? (
+                  <span className="rounded-full bg-surface2 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-gain">
+                    ✓ Official contents
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-surface2 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-mut">
+                    Typical contents
+                  </span>
+                )}
+              </div>
+              <ul className="space-y-1.5 text-sm leading-relaxed">
                 {product.contents.map((c, i) => (
-                  <li key={i}>{c.label}</li>
+                  <li key={i} className="flex gap-2">
+                    <span className="text-pokeblue">▸</span>
+                    <span className="min-w-0">{c.label}</span>
+                  </li>
                 ))}
               </ul>
               {product.contents.some((c) => !c.verified) ? (
-                <p className="mt-2 text-xs italic text-mut">
+                <p className="mt-3 text-xs italic text-mut">
                   Typical contents for this product type — verify the listing before buying.
                 </p>
-              ) : null}
+              ) : (
+                <p className="mt-3 text-xs text-mut">
+                  From the official TCGplayer product description.
+                </p>
+              )}
             </div>
           ) : null}
         </div>

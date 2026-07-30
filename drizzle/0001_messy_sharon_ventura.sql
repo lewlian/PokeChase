@@ -1,0 +1,1 @@
+ALTER TABLE `sealed_products` ADD `description` text;

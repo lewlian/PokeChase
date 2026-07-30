@@ -112,6 +112,7 @@ async function main() {
             productType: classifySealed(p.name),
             imageUrl: img,
             tcgplayerUrl: p.url,
+            description: ext(p, "CardText"),
           });
         }
       }

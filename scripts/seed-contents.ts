@@ -7,6 +7,7 @@
 import { eq, and } from "drizzle-orm";
 import { getDb, tables } from "../src/db";
 import { typicalPackCount } from "../src/lib/classify";
+import { parseOfficialContents } from "../src/lib/contents";
 import { runJob } from "./lib/util";
 import type { SealedType } from "../src/db/schema";
 
@@ -92,34 +93,41 @@ async function main() {
         productId: tables.sealedProducts.productId,
         name: tables.sealedProducts.name,
         productType: tables.sealedProducts.productType,
+        description: tables.sealedProducts.description,
         eraId: tables.sets.eraId,
       })
       .from(tables.sealedProducts)
       .innerJoin(tables.sets, eq(tables.sets.groupId, tables.sealedProducts.groupId));
 
     let written = 0;
+    let official = 0;
     for (const p of products) {
-      const rows = contentsFor(p.productType, p.name, p.eraId);
+      // Prefer the official TCGplayer "includes:" list (verified=true);
+      // fall back to era-aware templates (verified=false).
+      const parsed = parseOfficialContents(p.description);
+      const rows =
+        parsed.length > 0
+          ? parsed.map((label) => {
+              const m = label.match(/^(\d+)\s/);
+              return { label, quantity: m ? Number(m[1]) : null, verified: true };
+            })
+          : contentsFor(p.productType, p.name, p.eraId).map((r) => ({ ...r, verified: false }));
       if (rows.length === 0) continue;
+      if (parsed.length > 0) official++;
       await db
         .delete(tables.sealedContents)
-        .where(
-          and(
-            eq(tables.sealedContents.productId, p.productId),
-            eq(tables.sealedContents.verified, false),
-          ),
-        );
+        .where(and(eq(tables.sealedContents.productId, p.productId)));
       for (const r of rows) {
         await db.insert(tables.sealedContents).values({
           productId: p.productId,
           label: r.label,
           quantity: r.quantity,
-          verified: false,
+          verified: r.verified,
         });
         written++;
       }
     }
-    console.log(`  contents rows: ${written}`);
+    console.log(`  contents rows: ${written} (official lists: ${official} products)`);
     return written;
   });
 }
