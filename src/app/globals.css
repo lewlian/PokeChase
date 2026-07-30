@@ -1,26 +1,136 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --bg: #f6f7fb;
+  --surface: #ffffff;
+  --surface-2: #eef0f8;
+  --ink: #1c2033;
+  --muted: #5a6072;
+  --line: #e2e5f0;
+  --poke-yellow: #ffcb05;
+  --poke-yellow-ink: #7a5c00;
+  --poke-blue: #2a75bb;
+  --poke-red: #d5333f;
+  --gain: #15803d;
+  --loss: #d5333f;
+  --holo: linear-gradient(120deg, #7dd3fc, #c4b5fd, #f9a8d4, #fde68a, #7dd3fc);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg: #0f1424;
+    --surface: #1a2138;
+    --surface-2: #232b48;
+    --ink: #edeff7;
+    --muted: #9aa3bd;
+    --line: #2a3352;
+    --poke-yellow-ink: #ffd84d;
+    --poke-blue: #5aa2e0;
+    --gain: #4ade80;
+    --loss: #f87171;
   }
 }
 
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-mut: var(--muted);
+  --color-line: var(--line);
+  --color-pokeyellow: var(--poke-yellow);
+  --color-pokeyellowink: var(--poke-yellow-ink);
+  --color-pokeblue: var(--poke-blue);
+  --color-pokered: var(--poke-red);
+  --color-gain: var(--gain);
+  --color-loss: var(--loss);
+  --font-display: var(--font-fredoka);
+  --font-sans: var(--font-inter);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-fredoka), var(--font-inter), system-ui, sans-serif;
+}
+
+/* Card image hover: lift + holo shine sweep */
+.card-hover {
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+.card-hover:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.25);
+}
+.shine {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
+}
+.shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgb(255 255 255 / 0.35) 50%,
+    transparent 60%
+  );
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+.card-hover:hover .shine::after {
+  transition: transform 0.6s ease;
+  transform: translateX(120%);
+}
+
+/* Grail tier: animated holo border */
+.holo-ring {
+  position: relative;
+  background: var(--holo);
+  background-size: 300% 300%;
+  padding: 2px;
+  border-radius: 0.75rem;
+  animation: holo-shift 6s linear infinite;
+}
+@keyframes holo-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .holo-ring {
+    animation: none;
+  }
+  .card-hover,
+  .card-hover:hover {
+    transition: none;
+    transform: none;
+  }
+  .card-hover:hover .shine::after {
+    transition: none;
+    transform: translateX(-120%);
+  }
+}
+
+::selection {
+  background: var(--poke-yellow);
+  color: #1c2033;
 }

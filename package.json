@@ -6,7 +6,18 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "ingest:catalog": "tsx scripts/ingest-catalog.ts",
+    "ingest:prices": "tsx scripts/ingest-prices.ts",
+    "ingest:backfill": "tsx scripts/backfill-history.ts",
+    "ingest:chase": "tsx scripts/compute-chase.ts",
+    "ingest:logos": "tsx scripts/enrich-logos.ts",
+    "ingest:contents": "tsx scripts/seed-contents.ts",
+    "ingest:daily": "tsx scripts/ingest-daily.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.2",
