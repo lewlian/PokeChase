@@ -1,7 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { GlossaryTerm } from "@/content/glossary";
+
+export interface TermExample {
+  img: string;
+  name: string;
+  setName: string;
+  href: string;
+}
 
 const CATEGORIES = [
   "All",
@@ -12,7 +20,13 @@ const CATEGORIES = [
   "Slang",
 ] as const;
 
-export function GlossaryList({ terms }: { terms: GlossaryTerm[] }) {
+export function GlossaryList({
+  terms,
+  examples = {},
+}: {
+  terms: GlossaryTerm[];
+  examples?: Record<string, TermExample>;
+}) {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<(typeof CATEGORIES)[number]>("All");
 
@@ -64,17 +78,36 @@ export function GlossaryList({ terms }: { terms: GlossaryTerm[] }) {
         </p>
       ) : (
         <dl className="grid gap-3 md:grid-cols-2">
-          {shown.map((t) => (
-            <div key={t.term} className="rounded-xl border border-line bg-surface p-4">
-              <dt className="flex items-baseline justify-between gap-2">
-                <span className="font-display font-bold">{t.term}</span>
-                <span className="shrink-0 rounded-full bg-surface2 px-2 py-0.5 text-[10px] uppercase tracking-wide text-mut">
-                  {t.category}
-                </span>
-              </dt>
-              <dd className="mt-1 text-sm leading-relaxed text-mut">{t.def}</dd>
-            </div>
-          ))}
+          {shown.map((t) => {
+            const ex = examples[t.term];
+            return (
+              <div key={t.term} className="flex gap-3 rounded-xl border border-line bg-surface p-4">
+                <div className="min-w-0 flex-1">
+                  <dt className="flex items-baseline justify-between gap-2">
+                    <span className="font-display font-bold">{t.term}</span>
+                    <span className="shrink-0 rounded-full bg-surface2 px-2 py-0.5 text-[10px] uppercase tracking-wide text-mut">
+                      {t.category}
+                    </span>
+                  </dt>
+                  <dd className="mt-1 text-sm leading-relaxed text-mut">{t.def}</dd>
+                </div>
+                {ex ? (
+                  <Link
+                    href={ex.href}
+                    className="card-hover w-16 shrink-0 self-center"
+                    title={`Example: ${ex.name} (${ex.setName})`}
+                  >
+                    <img
+                      src={ex.img}
+                      alt={`Example of ${t.term}: ${ex.name}`}
+                      loading="lazy"
+                      className="aspect-5/7 w-full rounded object-contain"
+                    />
+                  </Link>
+                ) : null}
+              </div>
+            );
+          })}
         </dl>
       )}
     </div>

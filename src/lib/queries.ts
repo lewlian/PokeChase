@@ -343,6 +343,109 @@ export function movers(direction: "up" | "down", limit = 12, minPrice = 5): Move
   `);
 }
 
+/* --------------------- learn-hub example lookups ------------------------- */
+
+export interface ExampleCard {
+  productId: number;
+  name: string;
+  number: string | null;
+  rarity: string | null;
+  imageUrl: string;
+  setName: string;
+  market: number | null;
+}
+
+const CARD_WITH_PRICE = sql`
+  select c.product_id as productId, c.name, c.number, c.rarity,
+         c.image_url as imageUrl, s.name as setName, s.era_id as eraId,
+         (select max(ps.market) from price_snapshots ps
+           where ps.product_id = c.product_id
+             and ps.date = (select max(date) from price_snapshots ps2 where ps2.product_id = c.product_id)
+         ) as market
+  from cards c join sets s on s.group_id = c.group_id
+`;
+
+const MODERN_ERAS = sql`('sword-shield', 'scarlet-violet', 'mega-evolution')`;
+
+/**
+ * Modern example card of a printed rarity. mode "top" = most valuable (the
+ * ceiling); mode "median" = the typical card at today's median market price.
+ */
+export function exampleByRarity(
+  rarity: string,
+  mode: "top" | "median" = "top",
+): ExampleCard | null {
+  const db = getDb();
+  const base = sql`
+    select * from (${CARD_WITH_PRICE})
+    where rarity = ${rarity} and eraId in ${MODERN_ERAS} and market is not null
+  `;
+  if (mode === "top") {
+    return db.get<ExampleCard>(sql`${base} order by market desc limit 1`) ?? null;
+  }
+  const n = db.get<{ c: number }>(sql`select count(*) as c from (${base})`)?.c ?? 0;
+  if (n === 0) return null;
+  return (
+    db.get<ExampleCard>(sql`${base} order by market limit 1 offset ${Math.floor(n / 2)}`) ??
+    null
+  );
+}
+
+/** Most valuable card whose name matches a LIKE pattern (e.g. alt arts). */
+export function exampleByNamePattern(pattern: string): ExampleCard | null {
+  const db = getDb();
+  return (
+    db.get<ExampleCard>(sql`
+      select * from (${CARD_WITH_PRICE})
+      where name like ${pattern} and market is not null
+      order by market desc limit 1
+    `) ?? null
+  );
+}
+
+/** Most valuable card per set for one Pokémon — a character-collection lane. */
+export function characterGallery(name: string, limit = 6): ExampleCard[] {
+  const db = getDb();
+  return db.all<ExampleCard>(sql`
+    select productId, name, number, rarity, imageUrl, setName, max(market) as market
+    from (${CARD_WITH_PRICE})
+    where name like ${name + "%"} and market is not null
+    group by setName
+    order by market desc limit ${limit}
+  `);
+}
+
+export interface LineupProduct {
+  productId: number;
+  name: string;
+  productType: SealedType;
+  imageUrl: string;
+  market: number | null;
+}
+
+/** One representative sealed product per type from the newest main set that has them. */
+export function sealedLineup(groupId: number, types: SealedType[]): LineupProduct[] {
+  const db = getDb();
+  const rows = db.all<LineupProduct>(sql`
+    select sp.product_id as productId, sp.name, sp.product_type as productType,
+           sp.image_url as imageUrl,
+           (select max(ps.market) from price_snapshots ps
+             where ps.product_id = sp.product_id
+               and ps.date = (select max(date) from price_snapshots ps2 where ps2.product_id = sp.product_id)
+           ) as market
+    from sealed_products sp
+    where sp.group_id = ${groupId}
+  `);
+  const out: LineupProduct[] = [];
+  for (const t of types) {
+    const candidates = rows
+      .filter((r) => r.productType === t && r.market !== null)
+      .sort((a, b) => a.name.length - b.name.length || (b.market ?? 0) - (a.market ?? 0));
+    if (candidates[0]) out.push(candidates[0]);
+  }
+  return out;
+}
+
 /* ------------------------------ search ----------------------------------- */
 
 export function searchAll(q: string) {

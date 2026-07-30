@@ -2,13 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { GUIDES } from "@/content/guides";
+import { GuideVisual } from "@/components/learn/GuideVisual";
+
+// Guides embed live-price visuals (real cards, charts), so render per-request.
+export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ slug: string }>;
-}
-
-export function generateStaticParams() {
-  return GUIDES.map((g) => ({ slug: g.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -52,6 +52,7 @@ export default async function GuidePage({ params }: Props) {
                 </p>
               ))}
             </div>
+            {s.visual ? <GuideVisual spec={s.visual} /> : null}
           </section>
         ))}
       </div>

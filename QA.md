@@ -82,3 +82,17 @@ verified present via `launchctl list`. Manual pipeline run end-to-end exit 0.
   pages. Sealed tab redesigned: contents always visible (no collapse),
   horizontal cards, 2-col grid. 100/100 unit tests (6 new parser tests),
   29/29 smoke, zero console errors, browser-verified.
+
+## Addendum — search typeahead + Learn visuals (2026-07-30)
+
+- Header search: sample queries on focus; debounced live results (sets/cards/
+  sealed, thumbnails + prices) as you type; ArrowUp/Down + Enter navigation
+  verified via DOM automation; /api/v1/search endpoint added (smoke 31/31).
+- Learn guides now embed live visuals: median-priced rarity ladder (real
+  cards — switched from top-priced after QA caught an $819 outlier common
+  contradicting the lesson), alt-art showcase, Umbreon character-collection
+  gallery, current-set sealed lineup with $/pack, CSS grading-scale and
+  centering diagrams, protection ladder, and a live embedded price chart of
+  the current #1 chase card. Glossary: 8 visual rarity terms now show a real
+  tappable example card. All server-rendered from the live DB; zero console
+  errors; 100/100 unit tests.

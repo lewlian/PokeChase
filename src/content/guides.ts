@@ -3,7 +3,8 @@ export interface Guide {
   title: string;
   blurb: string;
   minutes: number;
-  sections: Array<{ h: string; ps: string[] }>;
+  /** Optional visual rendered after the section text — see GuideVisual. */
+  sections: Array<{ h: string; ps: string[]; visual?: string }>;
 }
 
 export const GUIDES: Guide[] = [
@@ -26,6 +27,7 @@ export const GUIDES: Guide[] = [
           "Three forces set a card's price: scarcity (how hard it is to pull or how few were printed), character (Charizard, Pikachu, Umbreon, and popular trainers command structural premiums), and condition (a Near Mint copy is the baseline; graded gem-mint copies can be worth multiples of raw ones).",
           "Modern sets concentrate value in Special Illustration Rares, alt arts, and gold secret rares. Vintage sets concentrate it in 1st Edition and Shadowless holos, and in top-graded copies of iconic cards. A fourth force — nostalgia cycles — moves whole eras at once: cards from whatever era 25-35 year olds opened as kids tend to appreciate as that cohort gains disposable income.",
         ],
+        visual: "rarity-ladder",
       },
       {
         h: "The three ways to collect",
@@ -33,6 +35,7 @@ export const GUIDES: Guide[] = [
           "Singles buyers pick exactly the cards they want and pay market price — this is the most efficient way to get cards, full stop. Pack rippers buy sealed product for the experience of opening; expect to receive less card value than you paid (the difference is the entertainment). Sealed collectors keep product unopened, betting on long-term scarcity.",
           "A sane default for a new collector: buy singles of the cards you love, open a little product for fun from sets you enjoy, and only hold sealed with money you won't miss for five-plus years. Never treat any of it as a substitute for actual investing.",
         ],
+        visual: "alt-art-showcase",
       },
       {
         h: "Using PokéChase",
@@ -55,6 +58,7 @@ export const GUIDES: Guide[] = [
           "Elite Trainer Box (ETB) — 9 packs in current sets (8 in the Sword & Shield era) plus 65 sleeves, 45 energy cards, dice, markers, and a player's guide, in a heavy display box. You pay a big per-pack premium for the accessories and the box itself; collectors buy them for display and for set-branded sleeves. Pokémon Center ETBs add an exclusive promo and command a lasting premium.",
           "Booster Bundle — 6 loose packs in a slim box, no extras. Frequently the cheapest per-pack way to buy at retail. Loose/sleeved packs — single packs; convenient but the worst per-pack economics, and vintage loose packs carry weighing/resealing risk.",
         ],
+        visual: "sealed-lineup",
       },
       {
         h: "Premium and promo-led products",
@@ -67,7 +71,7 @@ export const GUIDES: Guide[] = [
         h: "How to compare: price per pack",
         ps: [
           "Divide the product price by its pack count — PokéChase does this for you on set pages and product pages. A $130 booster box is $3.61/pack; a $55 ETB with 9 packs is $6.11/pack before you value the accessories. If you're opening for hits, buy the cheapest packs; if you're collecting product, condition of the box itself matters.",
-          "One honest caveat: our 'what's inside' lists are era-aware templates for the product type. Contents occasionally vary by set — verify the listing before a significant purchase.",
+          "Most modern products on this site show '✓ Official contents' pulled from the official product description; older products fall back to typical contents for their type. Either way, verify the listing before a significant purchase.",
         ],
       },
     ],
@@ -84,6 +88,7 @@ export const GUIDES: Guide[] = [
           "A grading company authenticates your card, scores its condition 1–10 across centering, corners, edges, and surface, and seals it in a tamper-evident slab with a label. The three majors are PSA (the liquidity king for Pokémon), Beckett/BGS (famous for 'black label' perfect 10s), and CGC (competitive pricing, strong sub-grade transparency).",
           "Grading does three things: it removes condition doubt for buyers, it protects the card physically, and — for high grades — it multiplies value. A PSA 10 of a modern chase card routinely sells for 2–4× the raw price; for vintage icons the multiple can be far higher.",
         ],
+        visual: "grading-scale",
       },
       {
         h: "When it's worth it",
@@ -91,6 +96,7 @@ export const GUIDES: Guide[] = [
           "The math: graded value minus (raw value + grading fee + shipping + weeks of turnaround) must be positive at the grade you'll actually receive. Be brutal about that last part — pack-fresh does not mean gem mint. Check centering with your own eyes, edges and surface under a bright light, and the card's pop report and PSA-10 comps before submitting.",
           "Good candidates: chase cards worth $50+ raw that look flawless, vintage holos in genuinely clean shape, and sentimental cards you want preserved regardless of return. Bad candidates: anything where a 9 would sell for less than the all-in cost, and nearly all bulk-era rares.",
         ],
+        visual: "centering",
       },
       {
         h: "If you're new",
@@ -111,6 +117,7 @@ export const GUIDES: Guide[] = [
         ps: [
           "Bulk: 1000-count cardboard boxes, unsleeved is fine. Anything worth a dollar: penny sleeve. Anything worth five: penny sleeve + toploader (or semi-rigid). Binder collections: side-loading pages in a zippered binder, stored upright — top-loading pages let cards fall out, and stacking binders flat imprints pages onto foils. Serious cards: sleeve + inner semi-rigid + magnetic one-touch, or send them to grading.",
         ],
+        visual: "protection-ladder",
       },
       {
         h: "Environment",
@@ -175,6 +182,7 @@ export const GUIDES: Guide[] = [
           "Our history goes back about a year (and grows daily). Look for the shape, not the wiggle: a post-release glide-down that has flattened suggests the dip has played out; a slow steady climb on an older card suggests durable demand; a vertical spike usually means a social-media moment that will partially retrace. The 7-day and 30-day deltas on chase cards summarize the recent trend at a glance.",
           "None of this is financial advice — it's context so you don't overpay at hype peaks for cards you'd have loved just as much three months later.",
         ],
+        visual: "live-chart",
       },
     ],
   },
@@ -190,6 +198,7 @@ export const GUIDES: Guide[] = [
           "The hobby is too big to collect 'everything', and trying is the fastest route to burnout and an unfocused pile. Proven lanes: set completion (every card in one set you love), master sets (completion plus all secrets and reverses — a serious grind), character collecting (every Umbreon, every Gengar — endlessly popular), era collecting (e.g. everything WotC), art collecting (one favorite illustrator's cards), and binder-of-favorites (no rules, pure joy).",
           "Character and art collecting are the friendliest starts: clear goals, steady dopamine, and price points from fifty cents to whatever your ceiling is.",
         ],
+        visual: "character-gallery:Umbreon",
       },
       {
         h: "Budget mechanics",
