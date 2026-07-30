@@ -74,6 +74,8 @@ async function main() {
     { path: "/products/999999999", mustContain: ["404"], status: 404 },
     { path: `/api/v1/history/${card.id}`, mustContain: ['"points"', '"market"'] },
     { path: "/api/v1/meta", mustContain: ['"sets"', '"latestDate"'] },
+    { path: "/api/v1/search?q=charizard", mustContain: ['"cards"', '"sets"', '"sealed"'] },
+    { path: "/api/v1/search?q=x", mustContain: ["at least 2"], status: 400 },
     { path: "/api/v1/history/not-a-number", mustContain: ["invalid"], status: 400 },
   ];
 

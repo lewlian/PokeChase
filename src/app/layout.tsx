@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fredoka, Inter } from "next/font/google";
 import Link from "next/link";
+import { SearchBox } from "@/components/SearchBox";
 import "./globals.css";
 
 const fredoka = Fredoka({
@@ -60,15 +61,9 @@ export default function RootLayout({
                 </Link>
               ))}
             </nav>
-            <form action="/search" className="ml-auto hidden sm:block">
-              <input
-                type="search"
-                name="q"
-                placeholder="Search cards & sets…"
-                aria-label="Search cards and sets"
-                className="w-56 rounded-full border border-line bg-bg px-4 py-1.5 text-sm outline-none placeholder:text-mut focus:border-pokeblue"
-              />
-            </form>
+            <div className="ml-auto hidden sm:block">
+              <SearchBox />
+            </div>
           </div>
         </header>
 
