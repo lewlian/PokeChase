@@ -19,7 +19,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "ingest:graded": "tsx scripts/ingest-graded.ts",
-    "ingest:jp": "tsx scripts/ingest-jp.ts"
+    "ingest:jp": "tsx scripts/ingest-jp.ts",
+    "ingest:bootstrap": "npm run db:migrate && tsx scripts/ingest-catalog.ts && tsx scripts/ingest-jp.ts && tsx scripts/ingest-prices.ts && tsx scripts/seed-contents.ts && tsx scripts/enrich-logos.ts && tsx scripts/backfill-history.ts && tsx scripts/compute-chase.ts"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.2",
@@ -27,7 +28,8 @@
     "next": "16.2.12",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "recharts": "^3.10.1"
+    "recharts": "^3.10.1",
+    "tsx": "^4.23.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -39,7 +41,6 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.12",
     "tailwindcss": "^4",
-    "tsx": "^4.23.1",
     "typescript": "^5",
     "vitest": "^4.1.10"
   }

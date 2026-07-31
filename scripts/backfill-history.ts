@@ -4,10 +4,23 @@
  *   npx tsx scripts/backfill-history.ts [--days 30] [--weeks 52]
  * Requires 7zz (brew install sevenzip). Idempotent — existing dates are skipped.
  */
-import { execFileSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+
+/** First available 7-Zip binary: 7zz (brew sevenzip), 7z/7za (p7zip on Linux). */
+function find7z(): string {
+  for (const bin of ["7zz", "7z", "7za"]) {
+    try {
+      execSync(`command -v ${bin}`, { stdio: "pipe" });
+      return bin;
+    } catch {
+      /* keep looking */
+    }
+  }
+  throw new Error("no 7-Zip binary found — install sevenzip (brew) or p7zip (linux)");
+}
 import { sql } from "drizzle-orm";
 import { getDb } from "../src/db";
 import { runJob, sleep, type TcgPrice, type TcgResponse } from "./lib/util";
@@ -51,6 +64,7 @@ async function main() {
     const dates = planDates(days, weeks).filter((d) => !have.has(d));
     console.log(`  dates to backfill: ${dates.length}`);
 
+    const sevenZip = find7z();
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "pokechase-backfill-"));
     let written = 0;
     let done = 0;
@@ -69,7 +83,7 @@ async function main() {
         fs.writeFileSync(archivePath, Buffer.from(await res.arrayBuffer()));
         const outDir = path.join(tmp, date);
         // extract only Pokémon (category 3) price files
-        execFileSync("7zz", ["x", archivePath, `-o${outDir}`, `${date}/3/*`, "-y"], {
+        execFileSync(sevenZip, ["x", archivePath, `-o${outDir}`, `${date}/3/*`, "-y"], {
           stdio: "pipe",
         });
         const groupsDir = path.join(outDir, date, "3");

@@ -148,3 +148,15 @@ verified present via `launchctl list`. Manual pipeline run end-to-end exit 0.
   31/31 smoke, 111/111 unit tests, zero console errors. Also observed the
   14:05 daily LaunchAgent ran autonomously today: stats advanced to 225
   sets / 28,926 cards / 3.53M price points, "updated Jul 31".
+
+## Addendum — Railway deployment prep (2026-07-31)
+
+- Added railway.json (migrate-on-boot start command, /api/v1/meta
+  healthcheck), in-app daily-ingest scheduler via Next instrumentation
+  (ENABLE_DAILY_INGEST=1, fires 21:05 UTC, spawns the pipeline in the web
+  service so it shares the volume-mounted DB), ingest:bootstrap one-shot
+  script, 7-Zip binary detection (7zz/7z/7za) so the history backfill works
+  on Linux containers, tsx moved to runtime deps, and DEPLOY.md walkthrough.
+  Verified: production build clean, and a real boot test with the flag set —
+  server Ready, API 200, "[ingest-scheduler] next daily ingest at
+  2026-07-31T21:05:00Z" logged. 111/111 tests.
