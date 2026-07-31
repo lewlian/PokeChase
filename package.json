@@ -20,7 +20,8 @@
     "typecheck": "tsc --noEmit",
     "ingest:graded": "tsx scripts/ingest-graded.ts",
     "ingest:jp": "tsx scripts/ingest-jp.ts",
-    "ingest:bootstrap": "npm run db:migrate && tsx scripts/ingest-catalog.ts && tsx scripts/ingest-jp.ts && tsx scripts/ingest-prices.ts && tsx scripts/seed-contents.ts && tsx scripts/enrich-logos.ts && tsx scripts/backfill-history.ts && tsx scripts/compute-chase.ts"
+    "ingest:bootstrap": "npm run db:migrate && tsx scripts/ingest-catalog.ts && tsx scripts/ingest-jp.ts && tsx scripts/ingest-prices.ts && tsx scripts/seed-contents.ts && tsx scripts/enrich-logos.ts && tsx scripts/backfill-history.ts && tsx scripts/compute-chase.ts",
+    "ingest:bootstrap:bg": "sh -c \"nohup npm run ingest:bootstrap > /tmp/bootstrap.log 2>&1 & echo bootstrap started, log: /tmp/bootstrap.log\""
   },
   "dependencies": {
     "better-sqlite3": "^13.0.2",
