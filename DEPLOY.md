@@ -28,6 +28,7 @@ for the one-time data load.
    | `POKECHASE_DB_PATH` | `/data/pokechase.db` | put the DB on the volume |
    | `ENABLE_DAILY_INGEST` | `1` | in-app daily refresh at 21:05 UTC |
    | `NIXPACKS_PKGS` | `p7zip` | 7-Zip for the history backfill |
+   | `NIXPACKS_NODE_VERSION` | `22` | belt-and-braces Node pin (repo also pins via .nvmrc) |
    | `PRICECHARTING_TOKEN` | *(optional)* | graded prices, when you subscribe |
 
    Saving variables triggers a redeploy — wait for it to go green. The site
@@ -47,6 +48,11 @@ for the one-time data load.
 
 Done. Verify: the homepage shows real stats and "Prices updated" with
 today's date; `/api/v1/meta` returns counts.
+
+> Troubleshooting: if a build log shows Node 18 or `npm ci` lockfile
+> errors, check the commit hash on the Deployments tab — "Redeploy" reruns
+> that same (possibly old) commit. Use "Deploy latest commit" or push to
+> `main` to build HEAD.
 
 ## Day-2 notes
 
