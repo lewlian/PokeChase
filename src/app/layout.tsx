@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Fredoka, Inter } from "next/font/google";
 import Link from "next/link";
 import { SearchBox } from "@/components/SearchBox";
+import { Sidebar } from "@/components/Sidebar";
+import { eraSummaries } from "@/lib/queries";
 import "./globals.css";
 
 const fredoka = Fredoka({
@@ -35,6 +37,7 @@ function Pokeball({ className = "" }: { className?: string }) {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const eras = eraSummaries();
   return (
     <html lang="en" className={`${fredoka.variable} ${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
@@ -67,7 +70,10 @@ export default function RootLayout({
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
+        <div className="mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 py-8">
+          <Sidebar eras={eras} />
+          <main className="min-w-0 flex-1">{children}</main>
+        </div>
 
         <footer className="border-t border-line bg-surface py-6 text-center text-xs text-mut">
           <div className="mx-auto max-w-4xl space-y-2 px-4">

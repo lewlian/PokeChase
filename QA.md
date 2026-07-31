@@ -135,3 +135,16 @@ verified present via `launchctl list`. Manual pipeline run end-to-end exit 0.
   the compact search API returns language per row. Verified live: "mega
   darkrai" search shows JP gold $479.75 chipped beside EN gold $194.81.
   111/111 unit tests, 31/31 smoke, zero console errors.
+
+## Addendum — sidebar navigation + search readability (2026-07-31)
+
+- New persistent left panel (desktop): "Dashboard" tab (active-state
+  highlighted) + full browse-by-era list with accent dots and set counts +
+  "All sets" link. Home page stays the dashboard (top chase, movers, newest);
+  its horizontal era strip is now mobile-only. Search typeahead widened to
+  min(92vw, 34rem) and all truncation removed from typeahead rows, card
+  tiles, and search sealed rows — long names wrap fully. Verified live
+  (long ETB product names fully readable); production build clean,
+  31/31 smoke, 111/111 unit tests, zero console errors. Also observed the
+  14:05 daily LaunchAgent ran autonomously today: stats advanced to 225
+  sets / 28,926 cards / 3.53M price points, "updated Jul 31".

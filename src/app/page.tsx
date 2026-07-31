@@ -55,8 +55,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Era timeline */}
-      <section>
+      {/* Era timeline — desktop uses the left sidebar; keep this for mobile */}
+      <section className="lg:hidden">
         <h2 className="mb-3 font-display text-xl font-bold">Browse by era</h2>
         <div className="flex gap-2 overflow-x-auto pb-2">
           {eras

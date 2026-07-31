@@ -66,7 +66,7 @@ export default async function SearchPage({
           {results.cards.length > 0 ? (
             <section>
               <h2 className="mb-3 font-display text-xl font-bold">Cards</h2>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                 {results.cards.map((c) => (
                   <CardTile key={c.productId} {...c} setName={c.setName} language={c.language} />
                 ))}
@@ -91,10 +91,10 @@ export default async function SearchPage({
                         className="h-10 w-10 rounded object-contain"
                       />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">{p.name}</p>
-                        <p className="flex items-center gap-1 truncate text-xs text-mut">
+                        <p className="text-sm font-medium leading-snug">{p.name}</p>
+                        <p className="flex items-start gap-1 text-xs text-mut">
                           <LangChip language={p.language} />
-                          <span className="truncate">{p.setName}</span>
+                          <span className="min-w-0">{p.setName}</span>
                         </p>
                       </div>
                       <span className="text-sm font-semibold tabular-nums">{money(p.market)}</span>

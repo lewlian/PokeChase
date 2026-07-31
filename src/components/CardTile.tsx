@@ -34,13 +34,13 @@ export function CardTile(p: CardTileProps) {
       </div>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold" title={p.name}>
+          <p className="text-sm font-semibold leading-snug">
             {p.rank ? <span className="mr-1 text-mut">#{p.rank}</span> : null}
             {p.name}
           </p>
-          <p className="flex items-center gap-1 truncate text-xs text-mut">
+          <p className="flex items-start gap-1 text-xs text-mut">
             <LangChip language={p.language} />
-            <span className="truncate">
+            <span className="min-w-0">
               {[p.number, p.rarity, p.setName].filter(Boolean).join(" · ")}
             </span>
           </p>

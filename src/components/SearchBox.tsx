@@ -189,7 +189,7 @@ export function SearchBox() {
       {open && (showSamples || q.trim().length >= 2) ? (
         <div
           id="search-typeahead"
-          className="absolute right-0 top-full z-50 mt-2 w-[22rem] overflow-hidden rounded-xl border border-line bg-surface shadow-2xl"
+          className="absolute right-0 top-full z-50 mt-2 w-[min(92vw,34rem)] overflow-hidden rounded-xl border border-line bg-surface shadow-2xl"
         >
           {showSamples ? (
             <div className="p-3">
@@ -237,10 +237,10 @@ export function SearchBox() {
                         )}
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-medium">{item.label}</span>
-                        <span className="flex items-center gap-1 truncate text-xs text-mut">
+                        <span className="block text-sm font-medium leading-snug">{item.label}</span>
+                        <span className="flex items-start gap-1 text-xs text-mut">
                           <LangChip language={item.language} />
-                          <span className="truncate">{item.sub}</span>
+                          <span className="min-w-0">{item.sub}</span>
                         </span>
                       </span>
                       {item.price !== null ? (
