@@ -34,6 +34,7 @@ export const sets = sqliteTable(
       .default(false),
     logoUrl: text("logo_url"), // TCGdex enrichment, may be null
     cardCount: integer("card_count").notNull().default(0),
+    language: text("language").notNull().default("en"), // 'en' | 'jp'
   },
   (t) => [uniqueIndex("sets_slug_uq").on(t.slug), index("sets_era_idx").on(t.eraId)],
 );

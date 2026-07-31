@@ -18,7 +18,8 @@
     "ingest:daily": "tsx scripts/ingest-daily.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "ingest:graded": "tsx scripts/ingest-graded.ts"
+    "ingest:graded": "tsx scripts/ingest-graded.ts",
+    "ingest:jp": "tsx scripts/ingest-jp.ts"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.2",

@@ -40,6 +40,8 @@ interface GroupLike {
 const NAME_RULES: Array<[RegExp, string]> = [
   // Modern prefixed names: "ME05: Pitch Black", "SV08: Surging Sparks", "SWSH12: ..."
   [/^ME\d*\s*:|^ME:\s/i, "mega-evolution"],
+  // Japanese Mega-era sets: "M5: Abyss Eye", "M6: Storm Emeralda", "M2a: …"
+  [/^M\d+[a-z]?\s*:/i, "mega-evolution"],
   [/^SV\d*\s*:|^SV:\s/i, "scarlet-violet"],
   [/^SWSH\d*\s*:|^SWSH:\s/i, "sword-shield"],
   [/^SM\s*(\d+|-)?\s*:|^SM:\s/i, "sun-moon"],

@@ -8,6 +8,7 @@ import path from "node:path";
 
 const steps = [
   "ingest-catalog.ts",
+  "ingest-jp.ts", // watched Japanese Mega-era sets (M6 Storm Emeralda etc.)
   "ingest-prices.ts",
   "seed-contents.ts",
   "compute-chase.ts",

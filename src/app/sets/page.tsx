@@ -52,8 +52,13 @@ export default function SetsPage() {
                   <SetLogo logoUrl={s.logoUrl} name={s.name} accent={era.accent} className="h-12" />
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold" title={s.name}>
-                    {s.name}
+                  <p className="flex items-center gap-1.5 truncate text-sm font-semibold" title={s.name}>
+                    <span className="truncate">{s.name}</span>
+                    {s.language === "jp" ? (
+                      <span className="shrink-0 rounded bg-pokered px-1 py-px text-[9px] font-bold uppercase text-white">
+                        JP
+                      </span>
+                    ) : null}
                   </p>
                   <p className="text-xs text-mut">
                     {shortDate(s.releaseDate)}

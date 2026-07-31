@@ -61,7 +61,14 @@ export default async function SetPage({ params, searchParams }: Props) {
           <p className="text-xs font-bold uppercase tracking-widest" style={{ color: set.era?.accent }}>
             {set.era?.name}
           </p>
-          <h1 className="font-display text-2xl font-bold sm:text-3xl">{set.name}</h1>
+          <h1 className="flex items-center gap-2 font-display text-2xl font-bold sm:text-3xl">
+            {set.name}
+            {set.language === "jp" ? (
+              <span className="rounded bg-pokered px-1.5 py-0.5 text-xs font-bold uppercase text-white">
+                Japanese
+              </span>
+            ) : null}
+          </h1>
           <p className="text-sm text-mut">
             Released {shortDate(set.releaseDate)}
             {set.cardCount ? ` · ${set.cardCount} cards` : ""}

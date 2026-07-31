@@ -20,13 +20,17 @@ async function main() {
   const date = todayUTC();
 
   await runJob("prices-daily", async () => {
-    const sets = await db.select({ groupId: tables.sets.groupId }).from(tables.sets);
+    const sets = await db
+      .select({ groupId: tables.sets.groupId, language: tables.sets.language })
+      .from(tables.sets);
     let written = 0;
     let i = 0;
     for (const s of sets) {
       i++;
+      // JP sets live under TCGplayer category 85; English under 3.
+      const base = s.language === "jp" ? TCGCSV.replace("/3", "/85") : TCGCSV;
       const prices = await fetchJson<TcgResponse<TcgPrice>>(
-        `${TCGCSV}/${s.groupId}/prices`,
+        `${base}/${s.groupId}/prices`,
       );
       written += insertPriceRows(db, prices.results, date);
       if (i % 40 === 0) console.log(`  groups: ${i}/${sets.length}`);

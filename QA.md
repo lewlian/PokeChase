@@ -109,3 +109,19 @@ verified present via `launchctl list`. Manual pipeline run end-to-end exit 0.
   PriceCharting comp links per card. Both render paths verified (populated
   path via temporary TEST rows, deleted after). 107/107 unit tests,
   31/31 smoke, token-less pipeline step exits cleanly.
+
+## Addendum — Japanese Mega-era sets / Storm Emeralda watch (2026-07-31)
+
+- User asked to capture "Storm Emeralda" (released in Japan today). Research:
+  it is the Japanese M6 set; TCGplayer had not listed it yet at build time
+  (M2–M6a were listed). Added a JP sync job (TCGplayer category 85) watching
+  /^M\d/ groups: all 8 existing JP Mega-era sets ingested (m1L/m1S, M2, M2a,
+  M3, M4, M5, M6a — 1,142+ cards, sealed, prices, contents, chase) with
+  language='jp' and JAPANESE badges in the UI. M6: Storm Emeralda will be
+  captured automatically by the daily pipeline the day TCGplayer lists it;
+  the English "Delta Reign" (Nov 6) is covered by the existing EN sync.
+- Fixed during QA: sets.language column was missing from the original
+  migration (silently dropped); chase compute now uses per-card latest
+  snapshots within a 3-day window instead of one global date (a partial
+  ingest had briefly wiped EN rankings — restored: 7,726 chase rows, 215
+  sets, incl. 140 JP). 111/111 unit tests, 31/31 smoke.

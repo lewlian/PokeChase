@@ -40,6 +40,7 @@ export interface SetRow {
   isSupplemental: boolean;
   logoUrl: string | null;
   cardCount: number;
+  language: string;
 }
 
 export function erasWithSets() {
@@ -47,7 +48,8 @@ export function erasWithSets() {
   const eras = db.select().from(tables.eras).orderBy(asc(tables.eras.sortOrder)).all();
   const sets = db.all<Omit<SetRow, "isSupplemental"> & { isSupplemental: number }>(sql`
     select group_id as groupId, era_id as eraId, name, slug, release_date as releaseDate,
-           is_supplemental as isSupplemental, logo_url as logoUrl, card_count as cardCount
+           is_supplemental as isSupplemental, logo_url as logoUrl, card_count as cardCount,
+           language
     from sets order by release_date desc nulls last, name
   `);
   return eras
@@ -78,7 +80,7 @@ export function newestSets(limit = 6) {
   return db.all<SetRow>(sql`
     select s.group_id as groupId, s.era_id as eraId, s.name, s.slug,
            s.release_date as releaseDate, s.is_supplemental as isSupplemental,
-           s.logo_url as logoUrl, s.card_count as cardCount
+           s.logo_url as logoUrl, s.card_count as cardCount, s.language
     from sets s join eras e on e.id = s.era_id
     where s.is_supplemental = 0 and s.release_date is not null
       and (e.end_year is null or cast(substr(s.release_date, 1, 4) as integer) <= e.end_year + 1)
@@ -482,7 +484,8 @@ export function searchAll(q: string) {
   `);
   const sets = db.all<SetRow>(sql`
     select group_id as groupId, era_id as eraId, name, slug, release_date as releaseDate,
-           is_supplemental as isSupplemental, logo_url as logoUrl, card_count as cardCount
+           is_supplemental as isSupplemental, logo_url as logoUrl, card_count as cardCount,
+           language
     from sets where name like ${like} order by release_date desc limit 10
   `);
   const sealed = db.all<{ productId: number; name: string; imageUrl: string; setName: string; market: number | null }>(sql`

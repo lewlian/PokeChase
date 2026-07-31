@@ -17,12 +17,14 @@ async function main() {
     if (!latest?.d) throw new Error("no price snapshots — run ingest-prices first");
     const date = latest.d;
 
-    // Best market price per card product on the latest date
+    // Best market price per card at its own latest snapshot (within 3 days of
+    // the global max — robust to partial ingests, e.g. JP sets a day ahead).
     const rows = db.all<{ productId: number; groupId: number; market: number }>(sql`
       select c.product_id as productId, c.group_id as groupId, max(ps.market) as market
       from cards c
-      join price_snapshots ps on ps.product_id = c.product_id and ps.date = ${date}
-      where ps.market is not null
+      join price_snapshots ps on ps.product_id = c.product_id
+        and ps.date = (select max(date) from price_snapshots p2 where p2.product_id = c.product_id)
+      where ps.market is not null and ps.date >= date(${date}, '-3 days')
       group by c.product_id
     `);
 
