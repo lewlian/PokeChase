@@ -16,6 +16,7 @@ export async function GET(req: Request) {
         name: s.name,
         releaseDate: s.releaseDate,
         logoUrl: s.logoUrl,
+        language: s.language,
       })),
       cards: cards.slice(0, 6).map((c) => ({
         productId: c.productId,
@@ -24,6 +25,7 @@ export async function GET(req: Request) {
         setName: c.setName,
         imageUrl: c.imageUrl,
         market: c.market,
+        language: c.language,
       })),
       sealed: sealed.slice(0, 3).map((p) => ({
         productId: p.productId,
@@ -31,6 +33,7 @@ export async function GET(req: Request) {
         setName: p.setName,
         imageUrl: p.imageUrl,
         market: p.market,
+        language: p.language,
       })),
     },
     { headers: { "cache-control": "public, max-age=300" } },

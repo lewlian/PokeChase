@@ -125,3 +125,13 @@ verified present via `launchctl list`. Manual pipeline run end-to-end exit 0.
   snapshots within a 3-day window instead of one global date (a partial
   ingest had briefly wiped EN rankings — restored: 7,726 chase rows, 215
   sets, incl. 140 JP). 111/111 unit tests, 31/31 smoke.
+
+## Addendum — EN/JP language chips (2026-07-31)
+
+- Added a LangChip (EN = blue outline, JP = solid red) to every
+  mixed-language surface: search page (sets/cards/sealed), search typeahead
+  dropdown, movers (home + /movers), "Biggest chase cards" tiles, newest
+  sets, and Learn-hub card galleries; CardTile accepts a language prop and
+  the compact search API returns language per row. Verified live: "mega
+  darkrai" search shows JP gold $479.75 chipped beside EN gold $194.81.
+  111/111 unit tests, 31/31 smoke, zero console errors.

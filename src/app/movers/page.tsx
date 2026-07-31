@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Delta } from "@/components/Delta";
+import { LangChip } from "@/components/LangChip";
 import { imageAt } from "@/lib/images";
 import { money } from "@/lib/format";
 import { movers } from "@/lib/queries";
@@ -54,8 +55,11 @@ export default function MoversPage() {
                     />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{m.name}</p>
-                      <p className="truncate text-xs text-mut">
-                        {m.setName} · {m.kind === "sealed" ? "sealed" : "single"}
+                      <p className="flex items-center gap-1 truncate text-xs text-mut">
+                        <LangChip language={m.language} />
+                        <span className="truncate">
+                          {m.setName} · {m.kind === "sealed" ? "sealed" : "single"}
+                        </span>
                       </p>
                     </div>
                     <div className="text-right">

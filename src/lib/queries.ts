@@ -103,6 +103,7 @@ export interface ChaseCardRow {
   tier: ChaseTier;
   setName?: string;
   setSlug?: string;
+  language?: string;
 }
 
 export function chaseForSet(groupId: number): ChaseCardRow[] {
@@ -121,7 +122,7 @@ export function topChaseGlobal(limit = 8): ChaseCardRow[] {
   return db.all<ChaseCardRow>(sql`
     select ch.product_id as productId, c.name, c.number, c.rarity, c.image_url as imageUrl,
            ch.market, ch.delta7_pct as delta7Pct, ch.delta30_pct as delta30Pct, ch.rank, ch.tier,
-           s.name as setName, s.slug as setSlug
+           s.name as setName, s.slug as setSlug, s.language
     from chase_current ch
     join cards c on c.product_id = ch.product_id
     join sets s on s.group_id = ch.group_id
@@ -305,6 +306,7 @@ export interface MoverRow {
   kind: "card" | "sealed";
   setName: string;
   setSlug: string;
+  language: string;
   cur: number;
   prev: number;
   pct: number;
@@ -325,7 +327,7 @@ export function movers(direction: "up" | "down", limit = 12, minPrice = 5): Move
              coalesce(c.name, sp.name) as name,
              coalesce(c.image_url, sp.image_url) as imageUrl,
              case when c.product_id is not null then 'card' else 'sealed' end as kind,
-             s.name as setName, s.slug as setSlug,
+             s.name as setName, s.slug as setSlug, s.language,
              x.cur, x.prev, (x.cur - x.prev) * 100.0 / x.prev as pct
       from (
         select a.product_id, max(a.market) as cur, max(b.market) as prev
@@ -372,12 +374,13 @@ export interface ExampleCard {
   rarity: string | null;
   imageUrl: string;
   setName: string;
+  language: string;
   market: number | null;
 }
 
 const CARD_WITH_PRICE = sql`
   select c.product_id as productId, c.name, c.number, c.rarity,
-         c.image_url as imageUrl, s.name as setName, s.era_id as eraId,
+         c.image_url as imageUrl, s.name as setName, s.language, s.era_id as eraId,
          (select max(ps.market) from price_snapshots ps
            where ps.product_id = c.product_id
              and ps.date = (select max(date) from price_snapshots ps2 where ps2.product_id = c.product_id)
@@ -427,7 +430,7 @@ export function exampleByNamePattern(pattern: string): ExampleCard | null {
 export function characterGallery(name: string, limit = 6): ExampleCard[] {
   const db = getDb();
   return db.all<ExampleCard>(sql`
-    select productId, name, number, rarity, imageUrl, setName, max(market) as market
+    select productId, name, number, rarity, imageUrl, setName, language, max(market) as market
     from (${CARD_WITH_PRICE})
     where name like ${name + "%"} and market is not null
     group by setName
@@ -471,9 +474,9 @@ export function sealedLineup(groupId: number, types: SealedType[]): LineupProduc
 export function searchAll(q: string) {
   const db = getDb();
   const like = `%${q.replace(/[%_]/g, " ").trim()}%`;
-  const cards = db.all<CardListRow & { setName: string; setSlug: string }>(sql`
+  const cards = db.all<CardListRow & { setName: string; setSlug: string; language: string }>(sql`
     select c.product_id as productId, c.name, c.number, c.sort_number as sortNumber,
-           c.rarity, c.image_url as imageUrl, s.name as setName, s.slug as setSlug,
+           c.rarity, c.image_url as imageUrl, s.name as setName, s.slug as setSlug, s.language,
            (select max(ps.market) from price_snapshots ps
              where ps.product_id = c.product_id
                and ps.date = (select max(date) from price_snapshots ps2 where ps2.product_id = c.product_id)
@@ -488,8 +491,8 @@ export function searchAll(q: string) {
            language
     from sets where name like ${like} order by release_date desc limit 10
   `);
-  const sealed = db.all<{ productId: number; name: string; imageUrl: string; setName: string; market: number | null }>(sql`
-    select sp.product_id as productId, sp.name, sp.image_url as imageUrl, s.name as setName,
+  const sealed = db.all<{ productId: number; name: string; imageUrl: string; setName: string; language: string; market: number | null }>(sql`
+    select sp.product_id as productId, sp.name, sp.image_url as imageUrl, s.name as setName, s.language,
            (select max(ps.market) from price_snapshots ps
              where ps.product_id = sp.product_id
                and ps.date = (select max(date) from price_snapshots ps2 where ps2.product_id = sp.product_id)

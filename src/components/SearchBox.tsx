@@ -4,9 +4,16 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { imageAt } from "@/lib/images";
 import { money } from "@/lib/format";
+import { LangChip } from "./LangChip";
 
 interface CompactResults {
-  sets: Array<{ slug: string; name: string; releaseDate: string | null; logoUrl: string | null }>;
+  sets: Array<{
+    slug: string;
+    name: string;
+    releaseDate: string | null;
+    logoUrl: string | null;
+    language: string;
+  }>;
   cards: Array<{
     productId: number;
     name: string;
@@ -14,6 +21,7 @@ interface CompactResults {
     setName: string;
     imageUrl: string;
     market: number | null;
+    language: string;
   }>;
   sealed: Array<{
     productId: number;
@@ -21,6 +29,7 @@ interface CompactResults {
     setName: string;
     imageUrl: string;
     market: number | null;
+    language: string;
   }>;
 }
 
@@ -39,6 +48,7 @@ interface Item {
   sub: string;
   img: string | null;
   price: number | null;
+  language: string;
 }
 
 export function SearchBox() {
@@ -98,6 +108,7 @@ export function SearchBox() {
         sub: `Set · ${s.releaseDate?.slice(0, 4) ?? ""}`,
         img: s.logoUrl,
         price: null,
+        language: s.language,
       });
     }
     for (const c of results.cards) {
@@ -107,6 +118,7 @@ export function SearchBox() {
         sub: [c.number, c.setName].filter(Boolean).join(" · "),
         img: imageAt(c.imageUrl, "200w"),
         price: c.market,
+        language: c.language,
       });
     }
     for (const p of results.sealed) {
@@ -116,6 +128,7 @@ export function SearchBox() {
         sub: `Sealed · ${p.setName}`,
         img: imageAt(p.imageUrl, "200w"),
         price: p.market,
+        language: p.language,
       });
     }
     return out;
@@ -225,7 +238,10 @@ export function SearchBox() {
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-medium">{item.label}</span>
-                        <span className="block truncate text-xs text-mut">{item.sub}</span>
+                        <span className="flex items-center gap-1 truncate text-xs text-mut">
+                          <LangChip language={item.language} />
+                          <span className="truncate">{item.sub}</span>
+                        </span>
                       </span>
                       {item.price !== null ? (
                         <span className="shrink-0 text-sm font-semibold tabular-nums">

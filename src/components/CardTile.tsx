@@ -2,6 +2,7 @@ import Link from "next/link";
 import { imageAt } from "@/lib/images";
 import { money } from "@/lib/format";
 import { Delta } from "./Delta";
+import { LangChip } from "./LangChip";
 import { TierBadge } from "./TierBadge";
 import type { ChaseTier } from "@/db/schema";
 
@@ -16,6 +17,7 @@ export interface CardTileProps {
   tier?: ChaseTier;
   rank?: number;
   setName?: string;
+  language?: string;
 }
 
 export function CardTile(p: CardTileProps) {
@@ -36,8 +38,11 @@ export function CardTile(p: CardTileProps) {
             {p.rank ? <span className="mr-1 text-mut">#{p.rank}</span> : null}
             {p.name}
           </p>
-          <p className="truncate text-xs text-mut">
-            {[p.number, p.rarity, p.setName].filter(Boolean).join(" · ")}
+          <p className="flex items-center gap-1 truncate text-xs text-mut">
+            <LangChip language={p.language} />
+            <span className="truncate">
+              {[p.number, p.rarity, p.setName].filter(Boolean).join(" · ")}
+            </span>
           </p>
         </div>
         {p.tier ? <TierBadge tier={p.tier} /> : null}

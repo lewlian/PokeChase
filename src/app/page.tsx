@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CardTile } from "@/components/CardTile";
+import { LangChip } from "@/components/LangChip";
 import { SetLogo } from "@/components/SetLogo";
 import { Delta } from "@/components/Delta";
 import { money, shortDate, yearOf } from "@/lib/format";
@@ -89,7 +90,13 @@ export default function HomePage() {
         </div>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {top.map((c) => (
-            <CardTile key={c.productId} {...c} rank={undefined} setName={c.setName} />
+            <CardTile
+              key={c.productId}
+              {...c}
+              rank={undefined}
+              setName={c.setName}
+              language={c.language}
+            />
           ))}
         </div>
       </section>
@@ -127,7 +134,10 @@ export default function HomePage() {
                         />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-medium">{m.name}</p>
-                          <p className="truncate text-xs text-mut">{m.setName}</p>
+                          <p className="flex items-center gap-1 truncate text-xs text-mut">
+                            <LangChip language={m.language} />
+                            <span className="truncate">{m.setName}</span>
+                          </p>
                         </div>
                         <div className="text-right">
                           <div className="text-sm font-semibold tabular-nums">{money(m.cur)}</div>
@@ -154,7 +164,9 @@ export default function HomePage() {
               className="card-hover flex flex-col items-center gap-2 rounded-xl border border-line bg-surface p-4 text-center"
             >
               <SetLogo logoUrl={s.logoUrl} name={s.name} className="h-14" />
-              <span className="text-sm font-semibold">{s.name}</span>
+              <span className="flex items-center gap-1.5 text-sm font-semibold">
+                {s.name} <LangChip language={s.language} />
+              </span>
               <span className="text-xs text-mut">
                 {yearOf(s.releaseDate)} · {s.cardCount} cards
               </span>

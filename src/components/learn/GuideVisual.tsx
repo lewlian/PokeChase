@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LangChip } from "@/components/LangChip";
 import { PriceChart } from "@/components/PriceChart";
 import { typicalPackCount, SEALED_TYPE_LABEL } from "@/lib/classify";
 import { money } from "@/lib/format";
@@ -48,7 +49,10 @@ function CardStrip({
             <p className="mt-1 truncate text-center text-xs font-medium" title={c.name}>
               {c.name}
             </p>
-            <p className="truncate text-center text-xs text-mut">{c.setName}</p>
+            <p className="flex items-center justify-center gap-1 truncate text-center text-xs text-mut">
+              <LangChip language={c.language} />
+              <span className="truncate">{c.setName}</span>
+            </p>
             <p className="text-center text-sm font-bold tabular-nums">{money(c.market)}</p>
           </Link>
         ))}

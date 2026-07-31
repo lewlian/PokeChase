@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { CardTile } from "@/components/CardTile";
+import { LangChip } from "@/components/LangChip";
 import { SetLogo } from "@/components/SetLogo";
 import { imageAt } from "@/lib/images";
 import { money, shortDate } from "@/lib/format";
@@ -51,7 +52,9 @@ export default async function SearchPage({
                   >
                     <SetLogo logoUrl={s.logoUrl} name={s.name} className="h-10" />
                     <div>
-                      <p className="text-sm font-semibold">{s.name}</p>
+                      <p className="flex items-center gap-1.5 text-sm font-semibold">
+                        {s.name} <LangChip language={s.language} />
+                      </p>
                       <p className="text-xs text-mut">{shortDate(s.releaseDate)}</p>
                     </div>
                   </Link>
@@ -65,7 +68,7 @@ export default async function SearchPage({
               <h2 className="mb-3 font-display text-xl font-bold">Cards</h2>
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
                 {results.cards.map((c) => (
-                  <CardTile key={c.productId} {...c} setName={c.setName} />
+                  <CardTile key={c.productId} {...c} setName={c.setName} language={c.language} />
                 ))}
               </div>
             </section>
@@ -89,7 +92,10 @@ export default async function SearchPage({
                       />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">{p.name}</p>
-                        <p className="truncate text-xs text-mut">{p.setName}</p>
+                        <p className="flex items-center gap-1 truncate text-xs text-mut">
+                          <LangChip language={p.language} />
+                          <span className="truncate">{p.setName}</span>
+                        </p>
                       </div>
                       <span className="text-sm font-semibold tabular-nums">{money(p.market)}</span>
                     </Link>
