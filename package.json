@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -H 0.0.0.0",
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node -e \"require('fs').mkdirSync(require('path').dirname(process.env.POKECHASE_DB_PATH||'./data/pokechase.db'),{recursive:true})\" && drizzle-kit migrate",
