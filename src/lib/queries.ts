@@ -43,23 +43,28 @@ export interface SetRow {
   language: string;
 }
 
-/** Light era list with set counts, for the sidebar nav. */
+/** Light era list with set counts, for the sidebar nav. Renders in the root
+ *  layout, so it must tolerate a missing/unmigrated DB (fresh deploys). */
 export function eraSummaries() {
-  const db = getDb();
-  return db.all<{
-    id: string;
-    name: string;
-    startYear: number;
-    endYear: number | null;
-    accent: string;
-    setCount: number;
-  }>(sql`
-    select e.id, e.name, e.start_year as startYear, e.end_year as endYear,
-           e.accent, count(s.group_id) as setCount
-    from eras e join sets s on s.era_id = e.id
-    group by e.id having setCount > 0
-    order by e.sort_order
-  `);
+  try {
+    const db = getDb();
+    return db.all<{
+      id: string;
+      name: string;
+      startYear: number;
+      endYear: number | null;
+      accent: string;
+      setCount: number;
+    }>(sql`
+      select e.id, e.name, e.start_year as startYear, e.end_year as endYear,
+             e.accent, count(s.group_id) as setCount
+      from eras e join sets s on s.era_id = e.id
+      group by e.id having setCount > 0
+      order by e.sort_order
+    `);
+  } catch {
+    return [];
+  }
 }
 
 export function erasWithSets() {

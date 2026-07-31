@@ -17,6 +17,10 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+// The sidebar queries the DB, which doesn't exist in build containers —
+// render everything per-request (queries are sub-ms against local SQLite).
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: { default: "PokéChase — Pokémon TCG chase cards & prices", template: "%s · PokéChase" },
   description:
