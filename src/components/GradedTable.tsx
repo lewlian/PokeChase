@@ -32,24 +32,29 @@ export function GradedTable({
 
   return (
     <section className="rounded-2xl border border-line bg-surface p-5">
-      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-display text-xl font-bold">Raw vs. graded market</h2>
-        <div className="flex gap-3 text-xs font-medium">
+        <div className="flex items-center gap-2 text-xs">
+          <span className="font-semibold uppercase tracking-wide text-mut">
+            Research sold prices:
+          </span>
           <a
             href={ebaySoldUrl(card)}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-pokeblue hover:underline"
+            className="rounded-full border border-line px-3 py-1 font-medium text-pokeblue hover:bg-surface2"
+            title="Completed eBay sales of this card graded PSA 10"
           >
-            PSA 10 solds on eBay ↗
+            eBay solds (PSA 10) ↗
           </a>
           <a
             href={pricechartingSearchUrl(card)}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-pokeblue hover:underline"
+            className="rounded-full border border-line px-3 py-1 font-medium text-pokeblue hover:bg-surface2"
+            title="This card's price at every grade (PSA/BGS/CGC), from eBay sold comps"
           >
-            All grades on PriceCharting ↗
+            PriceCharting (all grades) ↗
           </a>
         </div>
       </div>

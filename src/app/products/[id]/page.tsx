@@ -89,24 +89,16 @@ export default async function ProductPage({ params }: Props) {
                 </div>
               </div>
             ) : null}
-            <div className="ml-auto flex flex-col items-end gap-2">
+            <div className="ml-auto flex flex-col items-end gap-1">
               <a
                 href={product.tcgplayerUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded-full bg-pokeblue px-5 py-2 text-sm font-semibold text-white hover:opacity-90"
               >
-                View on TCGplayer ↗
+                Buy on TCGplayer ↗
               </a>
-              <a
-                href={product.tcgplayerUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs font-medium text-pokeblue hover:underline"
-                title="TCGplayer shows recent completed sales on the product page"
-              >
-                View latest sales on TCGplayer ↗
-              </a>
+              <span className="text-[11px] text-mut">live listings &amp; latest sales</span>
             </div>
           </div>
 
