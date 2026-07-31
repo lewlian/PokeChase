@@ -6,7 +6,6 @@ import { imageAt } from "@/lib/images";
 import { money } from "@/lib/format";
 import { movers } from "@/lib/queries";
 
-export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "7-day market movers" };
 
 export default function MoversPage() {

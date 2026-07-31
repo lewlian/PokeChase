@@ -4,7 +4,6 @@
     "builder": "DOCKERFILE"
   },
   "deploy": {
-    "startCommand": "npm run start",
     "healthcheckPath": "/api/v1/meta",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",

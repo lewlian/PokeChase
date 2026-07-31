@@ -13,7 +13,6 @@ import {
   topChaseGlobal,
 } from "@/lib/queries";
 
-export const dynamic = "force-dynamic";
 
 export default function HomePage() {
   const stats = siteStats();

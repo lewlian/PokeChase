@@ -7,7 +7,6 @@ import { imageAt } from "@/lib/images";
 import { money, shortDate } from "@/lib/format";
 import { searchAll } from "@/lib/queries";
 
-export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Search" };
 
 export default async function SearchPage({

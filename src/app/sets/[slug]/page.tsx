@@ -14,7 +14,6 @@ import {
 } from "@/lib/queries";
 import type { SealedType } from "@/db/schema";
 
-export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ slug: string }>;

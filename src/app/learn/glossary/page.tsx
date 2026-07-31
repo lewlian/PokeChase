@@ -8,8 +8,6 @@ import {
 } from "@/lib/queries";
 import { GlossaryList, type TermExample } from "./GlossaryList";
 
-// Example thumbnails use live card data, so render per-request.
-export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "Collector's glossary" };
 

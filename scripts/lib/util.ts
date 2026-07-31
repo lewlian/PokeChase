@@ -1,8 +1,14 @@
 import { getDb, tables } from "../../src/db";
 import { eq } from "drizzle-orm";
 
-export const TCGCSV = "https://tcgcsv.com/tcgplayer/3";
-export const POKEMON_CATEGORY = 3;
+export const TCGCSV_ROOT = "https://tcgcsv.com/tcgplayer";
+
+/** TCGplayer category ids per catalog language. */
+export const CATEGORY = { en: 3, jp: 85 } as const;
+
+export function categoryBase(language: keyof typeof CATEGORY): string {
+  return `${TCGCSV_ROOT}/${CATEGORY[language]}`;
+}
 
 export function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));

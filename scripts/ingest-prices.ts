@@ -5,7 +5,7 @@
  */
 import { getDb, tables } from "../src/db";
 import {
-  TCGCSV,
+  categoryBase,
   fetchJson,
   sleep,
   runJob,
@@ -27,8 +27,7 @@ async function main() {
     let i = 0;
     for (const s of sets) {
       i++;
-      // JP sets live under TCGplayer category 85; English under 3.
-      const base = s.language === "jp" ? TCGCSV.replace("/3", "/85") : TCGCSV;
+      const base = categoryBase(s.language === "jp" ? "jp" : "en");
       const prices = await fetchJson<TcgResponse<TcgPrice>>(
         `${base}/${s.groupId}/prices`,
       );

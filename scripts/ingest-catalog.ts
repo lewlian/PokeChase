@@ -1,26 +1,23 @@
 /**
- * Catalog sync: TCGCSV groups → sets, products → cards + sealed products.
+ * English catalog sync: TCGCSV groups → sets, products → cards + sealed.
  * Idempotent upserts; safe to re-run any time.
  *   npx tsx scripts/ingest-catalog.ts
  */
 import { getDb, tables } from "../src/db";
-import { sql, eq } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { ERAS, eraForGroup } from "../src/lib/eras";
-import { classifySealed } from "../src/lib/classify";
-import { slugify, sortNumber } from "../src/lib/format";
+import { slugify } from "../src/lib/format";
+import { upsertGroupProducts } from "./lib/sync";
 import {
-  TCGCSV,
+  categoryBase,
   fetchJson,
   sleep,
   runJob,
   type TcgGroup,
-  type TcgProduct,
   type TcgResponse,
-  ext,
-  isCard,
 } from "./lib/util";
 
-const PLACEHOLDER_IMG = "https://tcgplayer-cdn.tcgplayer.com/product/placeholder_200w.jpg";
+const BASE = categoryBase("en");
 
 async function main() {
   const db = getDb();
@@ -45,7 +42,7 @@ async function main() {
     }
 
     // 2. Groups → sets
-    const groups = await fetchJson<TcgResponse<TcgGroup>>(`${TCGCSV}/groups`);
+    const groups = await fetchJson<TcgResponse<TcgGroup>>(`${BASE}/groups`);
     const usedSlugs = new Map<string, number>();
     let written = 0;
 
@@ -85,63 +82,16 @@ async function main() {
     let i = 0;
     for (const g of groups.results) {
       i++;
-      const prods = await fetchJson<TcgResponse<TcgProduct>>(
-        `${TCGCSV}/${g.groupId}/products`,
-      );
-      const cardRows = [];
-      const sealedRows = [];
-      for (const p of prods.results) {
-        const img = p.imageUrl || PLACEHOLDER_IMG;
-        if (isCard(p)) {
-          const num = ext(p, "Number");
-          cardRows.push({
-            productId: p.productId,
-            groupId: g.groupId,
-            name: p.name,
-            number: num,
-            sortNumber: sortNumber(num),
-            rarity: ext(p, "Rarity"),
-            imageUrl: img,
-            tcgplayerUrl: p.url,
-          });
-        } else {
-          sealedRows.push({
-            productId: p.productId,
-            groupId: g.groupId,
-            name: p.name,
-            productType: classifySealed(p.name),
-            imageUrl: img,
-            tcgplayerUrl: p.url,
-            description: ext(p, "CardText"),
-          });
-        }
-      }
-      for (const row of cardRows) {
-        await db
-          .insert(tables.cards)
-          .values(row)
-          .onConflictDoUpdate({ target: tables.cards.productId, set: row });
-      }
-      for (const row of sealedRows) {
-        await db
-          .insert(tables.sealedProducts)
-          .values(row)
-          .onConflictDoUpdate({ target: tables.sealedProducts.productId, set: row });
-      }
-      await db
-        .update(tables.sets)
-        .set({ cardCount: cardRows.length })
-        .where(eq(tables.sets.groupId, g.groupId));
-
-      written += prods.results.length;
+      const counts = await upsertGroupProducts(db, BASE, g.groupId);
+      written += counts.cards + counts.sealed;
       if (i % 25 === 0) console.log(`  groups processed: ${i}/${groups.results.length}`);
       await sleep(120); // politeness
     }
 
-    const counts = await db.get<{ c: number; s: number }>(
+    const totals = await db.get<{ c: number; s: number }>(
       sql`select (select count(*) from cards) as c, (select count(*) from sealed_products) as s`,
     );
-    console.log(`  totals — cards: ${counts?.c}, sealed: ${counts?.s}`);
+    console.log(`  totals — cards: ${totals?.c}, sealed: ${totals?.s}`);
     return written;
   });
 }

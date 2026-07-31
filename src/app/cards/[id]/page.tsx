@@ -17,7 +17,6 @@ import {
   priceHistory,
 } from "@/lib/queries";
 
-export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ id: string }>;

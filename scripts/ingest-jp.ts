@@ -5,33 +5,29 @@
  * catalog + today's prices for them. Sets are stored with language='jp'.
  *   npx tsx scripts/ingest-jp.ts
  */
-import { eq } from "drizzle-orm";
 import { getDb, tables } from "../src/db";
 import { eraForGroup } from "../src/lib/eras";
-import { classifySealed } from "../src/lib/classify";
-import { slugify, sortNumber } from "../src/lib/format";
+import { slugify } from "../src/lib/format";
+import { upsertGroupProducts } from "./lib/sync";
+import { insertPriceRows } from "./lib/prices";
 import {
+  categoryBase,
   fetchJson,
   sleep,
   runJob,
   todayUTC,
   type TcgGroup,
-  type TcgProduct,
   type TcgPrice,
   type TcgResponse,
-  ext,
-  isCard,
 } from "./lib/util";
-import { insertPriceRows } from "./lib/prices";
 
-const JP_BASE = "https://tcgcsv.com/tcgplayer/85";
+const BASE = categoryBase("jp");
 const WATCH = /^M\d/i;
-const PLACEHOLDER_IMG = "https://tcgplayer-cdn.tcgplayer.com/product/placeholder_200w.jpg";
 
 async function main() {
   const db = getDb();
   await runJob("jp-sync", async () => {
-    const groups = await fetchJson<TcgResponse<TcgGroup>>(`${JP_BASE}/groups`);
+    const groups = await fetchJson<TcgResponse<TcgGroup>>(`${BASE}/groups`);
     const watched = groups.results.filter((g) => WATCH.test(g.name));
     console.log(`  watched JP groups: ${watched.map((g) => g.name).join(" · ") || "none"}`);
 
@@ -59,54 +55,10 @@ async function main() {
           },
         });
 
-      const prods = await fetchJson<TcgResponse<TcgProduct>>(
-        `${JP_BASE}/${g.groupId}/products`,
-      );
-      let cardCount = 0;
-      for (const p of prods.results) {
-        const img = p.imageUrl || PLACEHOLDER_IMG;
-        if (isCard(p)) {
-          cardCount++;
-          const num = ext(p, "Number");
-          const row = {
-            productId: p.productId,
-            groupId: g.groupId,
-            name: p.name,
-            number: num,
-            sortNumber: sortNumber(num),
-            rarity: ext(p, "Rarity"),
-            imageUrl: img,
-            tcgplayerUrl: p.url,
-          };
-          await db
-            .insert(tables.cards)
-            .values(row)
-            .onConflictDoUpdate({ target: tables.cards.productId, set: row });
-        } else {
-          const row = {
-            productId: p.productId,
-            groupId: g.groupId,
-            name: p.name,
-            productType: classifySealed(p.name),
-            imageUrl: img,
-            tcgplayerUrl: p.url,
-            description: ext(p, "CardText"),
-          };
-          await db
-            .insert(tables.sealedProducts)
-            .values(row)
-            .onConflictDoUpdate({ target: tables.sealedProducts.productId, set: row });
-        }
-        written++;
-      }
-      await db
-        .update(tables.sets)
-        .set({ cardCount })
-        .where(eq(tables.sets.groupId, g.groupId));
+      const counts = await upsertGroupProducts(db, BASE, g.groupId);
+      written += counts.cards + counts.sealed;
 
-      const prices = await fetchJson<TcgResponse<TcgPrice>>(
-        `${JP_BASE}/${g.groupId}/prices`,
-      );
+      const prices = await fetchJson<TcgResponse<TcgPrice>>(`${BASE}/${g.groupId}/prices`);
       written += insertPriceRows(db, prices.results, date);
       await sleep(150);
     }

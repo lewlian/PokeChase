@@ -4,8 +4,6 @@ import type { Metadata } from "next";
 import { GUIDES } from "@/content/guides";
 import { GuideVisual } from "@/components/learn/GuideVisual";
 
-// Guides embed live-price visuals (real cards, charts), so render per-request.
-export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ slug: string }>;

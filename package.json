@@ -8,7 +8,7 @@
     "start": "next start -H 0.0.0.0",
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "node -e \"require('fs').mkdirSync(require('path').dirname(process.env.POKECHASE_DB_PATH||'./data/pokechase.db'),{recursive:true})\" && drizzle-kit migrate",
+    "db:migrate": "tsx scripts/migrate.ts",
     "ingest:catalog": "tsx scripts/ingest-catalog.ts",
     "ingest:prices": "tsx scripts/ingest-prices.ts",
     "ingest:backfill": "tsx scripts/backfill-history.ts",

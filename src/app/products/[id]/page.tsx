@@ -14,7 +14,6 @@ import {
   sealedForSet,
 } from "@/lib/queries";
 
-export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ id: string }>;

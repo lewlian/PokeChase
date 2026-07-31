@@ -4,7 +4,6 @@ import { SetLogo } from "@/components/SetLogo";
 import { shortDate } from "@/lib/format";
 import { erasWithSets } from "@/lib/queries";
 
-export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "All sets by era" };
 
 export default function SetsPage() {
