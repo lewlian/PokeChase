@@ -1,0 +1,3 @@
+{
+  "_comment": "Manual set-logo overrides applied by scripts/enrich-logos.ts (highest priority). Key = groupId (see script's unmatched report or the sets table), value = direct https image URL (png/jpg/webp). Example: \"24711\": \"https://example.com/abyss-eye-logo.png\""
+}
