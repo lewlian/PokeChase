@@ -152,6 +152,24 @@ export const chaseOverrides = sqliteTable("chase_overrides", {
   note: text("note"),
 });
 
+/** Graded-market prices (PSA/BGS/CGC…) from an external comps provider. */
+export const gradedPrices = sqliteTable(
+  "graded_prices",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    productId: integer("product_id").notNull(), // our TCGplayer product id
+    source: text("source").notNull(), // 'pricecharting'
+    grade: text("grade").notNull(), // 'Ungraded' | 'Grade 9' | 'PSA 10' | ...
+    price: real("price").notNull(), // USD
+    matchedName: text("matched_name"), // provider's product name, for match audit
+    fetchedAt: text("fetched_at").notNull(), // YYYY-MM-DD
+  },
+  (t) => [
+    uniqueIndex("graded_uq").on(t.productId, t.source, t.grade),
+    index("graded_product_idx").on(t.productId),
+  ],
+);
+
 /** Ingestion observability. */
 export const jobRuns = sqliteTable(
   "job_runs",

@@ -49,9 +49,11 @@ async function main() {
         "Market vs. current asks",
         "Best ask",
         "View latest sales on TCGplayer",
+        "Raw vs. graded market",
+        "PSA 10 solds on eBay",
       ],
     },
-    { path: `/cards/${anyCard.id}`, mustContain: ["Price history"] },
+    { path: `/cards/${anyCard.id}`, mustContain: ["Price history", "Raw vs. graded market"] },
     {
       path: `/products/${sealed.id}`,
       mustContain: [

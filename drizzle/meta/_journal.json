@@ -15,6 +15,13 @@
       "when": 1785421178588,
       "tag": "0001_messy_sharon_ventura",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1785472530361,
+      "tag": "0002_gigantic_selene",
+      "breakpoints": true
     }
   ]
 }

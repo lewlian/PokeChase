@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { AskTable } from "@/components/AskTable";
+import { GradedTable } from "@/components/GradedTable";
 import { PriceChart } from "@/components/PriceChart";
 import { TierBadge } from "@/components/TierBadge";
 import { Delta } from "@/components/Delta";
@@ -11,6 +12,7 @@ import { money, shortDate } from "@/lib/format";
 import {
   cardById,
   chaseForSet,
+  gradedPricesFor,
   latestVariantPrices,
   priceHistory,
 } from "@/lib/queries";
@@ -36,6 +38,7 @@ export default async function CardPage({ params }: Props) {
 
   const variants = latestVariantPrices(productId);
   const history = priceHistory(productId);
+  const graded = gradedPricesFor(productId);
   const best = variants.reduce<number | null>(
     (acc, v) => (v.market !== null && (acc === null || v.market > acc) ? v.market : acc),
     null,
@@ -124,6 +127,12 @@ export default async function CardPage({ params }: Props) {
             <h2 className="mb-2 font-display text-lg font-bold">Market vs. current asks</h2>
             <AskTable variants={variants} />
           </section>
+
+          <GradedTable
+            card={{ name: card.name, number: card.number, setName: card.setName }}
+            rawMarket={best}
+            graded={graded}
+          />
         </div>
       </div>
 

@@ -50,6 +50,23 @@ launchctl unload ~/Library/LaunchAgents/com.pokechase.daily.plist
 rm ~/Library/LaunchAgents/com.pokechase.daily.plist
 ```
 
+## Graded prices (PSA/BGS/CGC)
+
+TCGplayer data is raw-only, so graded markets come from the
+[PriceCharting API](https://www.pricecharting.com/api-documentation) (paid
+subscription; eBay-sold comps for Ungraded, Grades 7–9.5, PSA 10, BGS 10,
+CGC 10, SGC 10). Card pages always show a "Raw vs. graded market" section with
+prefilled eBay-solds and PriceCharting comp links; inline grade tables light up
+once you set:
+
+```bash
+export PRICECHARTING_TOKEN=your-40-char-token   # from PriceCharting → Subscription → API/Download
+```
+
+The daily pipeline then refreshes graded prices for chase-tier cards on a
+rolling ~weekly cadence (500 cards/day at their 1 req/sec limit), storing only
+matches that pass a card-number sanity check (`ingest:graded` to run manually).
+
 ## Architecture
 
 - **Next.js 16** (App Router, TypeScript, Tailwind v4) — server components query

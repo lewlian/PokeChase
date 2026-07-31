@@ -17,7 +17,8 @@
     "ingest:contents": "tsx scripts/seed-contents.ts",
     "ingest:daily": "tsx scripts/ingest-daily.ts",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "ingest:graded": "tsx scripts/ingest-graded.ts"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.2",

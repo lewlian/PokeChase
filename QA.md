@@ -96,3 +96,16 @@ verified present via `launchctl list`. Manual pipeline run end-to-end exit 0.
   the current #1 chase card. Glossary: 8 visual rarity terms now show a real
   tappable example card. All server-rendered from the live DB; zero console
   errors; 100/100 unit tests.
+
+## Addendum — raw vs. graded market (2026-07-30)
+
+- Card pages now have a "Raw vs. graded market" section. TCGplayer is
+  raw-only, so graded data (Ungraded, Grades 7–9.5, PSA 10, BGS 10, CGC 10,
+  SGC 10) comes from the PriceCharting API — field→grade mapping taken from
+  their official docs; ingest is token-gated (PRICECHARTING_TOKEN), respects
+  the 1 req/sec limit, refreshes chase-tier cards ~weekly, and stores only
+  matches passing a card-number sanity check. Without a token the section
+  shows the raw baseline, grading education, and prefilled eBay-solds +
+  PriceCharting comp links per card. Both render paths verified (populated
+  path via temporary TEST rows, deleted after). 107/107 unit tests,
+  31/31 smoke, token-less pipeline step exits cleanly.

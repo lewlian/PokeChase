@@ -343,6 +343,24 @@ export function movers(direction: "up" | "down", limit = 12, minPrice = 5): Move
   `);
 }
 
+/* ------------------------------ graded ----------------------------------- */
+
+export interface GradedPriceRow {
+  grade: string;
+  price: number;
+  source: string;
+  matchedName: string | null;
+  fetchedAt: string;
+}
+
+export function gradedPricesFor(productId: number): GradedPriceRow[] {
+  const db = getDb();
+  return db.all<GradedPriceRow>(sql`
+    select grade, price, source, matched_name as matchedName, fetched_at as fetchedAt
+    from graded_prices where product_id = ${productId}
+  `);
+}
+
 /* --------------------- learn-hub example lookups ------------------------- */
 
 export interface ExampleCard {

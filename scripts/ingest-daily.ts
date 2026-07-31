@@ -12,6 +12,7 @@ const steps = [
   "seed-contents.ts",
   "compute-chase.ts",
   "enrich-logos.ts",
+  "ingest-graded.ts", // no-op unless PRICECHARTING_TOKEN is set
 ];
 
 for (const step of steps) {
