@@ -27,9 +27,10 @@ for the one-time data load.
    |---|---|---|
    | `POKECHASE_DB_PATH` | `/data/pokechase.db` | put the DB on the volume |
    | `ENABLE_DAILY_INGEST` | `1` | in-app daily refresh at 21:05 UTC |
-   | `NIXPACKS_PKGS` | `p7zip` | 7-Zip for the history backfill |
-   | `NIXPACKS_NODE_VERSION` | `22` | belt-and-braces Node pin (repo also pins via .nvmrc) |
    | `PRICECHARTING_TOKEN` | *(optional)* | graded prices, when you subscribe |
+
+   (The repo ships a Dockerfile — Node 22 and 7-Zip are baked into the
+   image, so no NIXPACKS_* variables are needed.)
 
    Saving variables triggers a redeploy — wait for it to go green. The site
    is now live but **empty** (no data yet).
