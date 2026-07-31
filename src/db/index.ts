@@ -1,5 +1,6 @@
 import Database from "better-sqlite3";
 import { drizzle, type BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
+import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import path from "node:path";
 import fs from "node:fs";
 import * as schema from "./schema";
@@ -16,7 +17,15 @@ export function getDb(): BetterSQLite3Database<typeof schema> {
   const sqlite = new Database(DB_PATH);
   sqlite.pragma("journal_mode = WAL");
   sqlite.pragma("synchronous = NORMAL");
-  _db = drizzle(sqlite, { schema });
+  const db = drizzle(sqlite, { schema });
+  // Self-migrating: fresh deploys get their schema on first open (idempotent,
+  // committed SQL in ./drizzle). Replaces drizzle-kit CLI at boot, which
+  // proved unreliable in containers.
+  const migrations = path.join(process.cwd(), "drizzle");
+  if (fs.existsSync(migrations)) {
+    migrate(db, { migrationsFolder: migrations });
+  }
+  _db = db;
   return _db;
 }
 

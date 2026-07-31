@@ -17,5 +17,5 @@ RUN npm run build
 ENV NODE_ENV=production
 EXPOSE 3000
 
-# railway.json's startCommand overrides this, but keep a sane default
-CMD ["sh", "-c", "npm run db:migrate && npm run start"]
+# Migrations run in-app when the DB first opens (src/db/index.ts)
+CMD ["npm", "run", "start"]
