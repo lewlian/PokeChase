@@ -50,10 +50,20 @@ for the one-time data load.
 Done. Verify: the homepage shows real stats and "Prices updated" with
 today's date; `/api/v1/meta` returns counts.
 
-> Troubleshooting: if a build log shows Node 18 or `npm ci` lockfile
-> errors, check the commit hash on the Deployments tab — "Redeploy" reruns
-> that same (possibly old) commit. Use "Deploy latest commit" or push to
-> `main` to build HEAD.
+> Troubleshooting (all hit and solved during initial setup):
+> - Build log shows Node 18 / `npm ci` lockfile errors → you're building a
+>   stale commit. "Redeploy" reruns that same commit; use "Deploy latest
+>   commit" or push to `main`.
+> - Healthcheck "service unavailable" → set the `PORT=3000` service
+>   variable (Dockerfile deploys don't get one injected; the probe targets
+>   whatever PORT says).
+> - Deploy log ends after "migrations applied" → historical; migrations
+>   now run in-app on DB open, boot is just `next start`.
+> - Deployment green but domain says "Application failed to respond" →
+>   domain target port must be 3000, and the domain must be attached to
+>   the service that actually deployed (retry attempts can leave a stale
+>   service holding the domain). Decisive test from `railway ssh`:
+>   `node -e "fetch('http://localhost:3000/api/v1/meta').then(r=>r.text()).then(console.log)"`
 
 ## Day-2 notes
 
