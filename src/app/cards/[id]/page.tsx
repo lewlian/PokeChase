@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { AskTable } from "@/components/AskTable";
+import { CardActions } from "@/components/CardActions";
 import { GradedTable } from "@/components/GradedTable";
 import { PriceChart } from "@/components/PriceChart";
 import { TierBadge } from "@/components/TierBadge";
@@ -16,6 +17,7 @@ import {
   latestVariantPrices,
   priceHistory,
 } from "@/lib/queries";
+import { getUser } from "@/lib/supabase/server";
 
 
 interface Props {
@@ -45,6 +47,7 @@ export default async function CardPage({ params }: Props) {
   const related = chaseForSet(card.groupId)
     .filter((c) => c.productId !== productId)
     .slice(0, 4);
+  const signedIn = (await getUser()) !== null;
 
   return (
     <div className="space-y-10">
@@ -113,6 +116,12 @@ export default async function CardPage({ params }: Props) {
               <span className="text-[11px] text-mut">live listings &amp; latest sales</span>
             </div>
           </div>
+
+          <CardActions
+            productId={productId}
+            variants={variants.map((v) => v.subType)}
+            signedIn={signedIn}
+          />
 
           <section>
             <h2 className="mb-2 font-display text-lg font-bold">Market vs. current asks</h2>

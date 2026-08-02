@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { CardsTable, type CardsTableRow } from "@/components/CardsTable";
 import { eraSummaries } from "@/lib/queries";
-import { marketScreener, sparklinesFor } from "@/lib/queries-market";
+import { marketScreener, sparkKey, sparklinesFor } from "@/lib/queries-market";
 import {
   MIN_PRICE_CHOICES,
   SCREENER_PAGE_SIZE,
@@ -29,7 +29,10 @@ export default async function MarketPage({ searchParams }: Props) {
   const p = parseScreenerParams(await searchParams);
   const { rows, total } = marketScreener(p);
   const sparks = sparklinesFor(rows.map((r) => ({ productId: r.productId, subType: r.subType })));
-  const tableRows: CardsTableRow[] = rows.map((r) => ({ ...r, spark: sparks.get(r.productId) ?? [] }));
+  const tableRows: CardsTableRow[] = rows.map((r) => ({
+    ...r,
+    spark: sparks.get(sparkKey(r.productId, r.subType)) ?? [],
+  }));
   const eras = eraSummaries();
   const pageCount = Math.max(1, Math.ceil(total / SCREENER_PAGE_SIZE));
 

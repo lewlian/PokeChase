@@ -12,7 +12,7 @@ import {
   sealedForSet,
   setBySlug,
 } from "@/lib/queries";
-import { cardsForSetWithChange, sparklinesFor } from "@/lib/queries-market";
+import { cardsForSetWithChange, sparkKey, sparklinesFor } from "@/lib/queries-market";
 import { CardsTable, type CardsTableRow } from "@/components/CardsTable";
 import { SET_TABLE_SORTS, sortSetRows, type SetTableSort } from "@/lib/market-params";
 import type { SealedType } from "@/db/schema";
@@ -219,7 +219,7 @@ function SetCardsTable({ rows }: { rows: ReturnType<typeof cardsForSetWithChange
   );
   const tableRows: CardsTableRow[] = rows.map((r) => ({
     ...r,
-    spark: sparks.get(r.productId) ?? [],
+    spark: sparks.get(sparkKey(r.productId, r.subType)) ?? [],
   }));
   return <CardsTable rows={tableRows} />;
 }

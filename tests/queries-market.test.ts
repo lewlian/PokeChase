@@ -77,11 +77,21 @@ describe("cardsForSetWithChange", () => {
 describe("sparklinesFor (D3)", () => {
   it("returns the 30d best-variant series in date order", () => {
     const sparks = qm.sparklinesFor([{ productId: 1, subType: "Holofoil" }]);
-    expect(sparks.get(1)).toEqual([25, 40, 50]); // day(40)'s 99 excluded, Normal excluded
+    expect(sparks.get(qm.sparkKey(1, "Holofoil"))).toEqual([25, 40, 50]); // day(40)'s 99 excluded, Normal excluded
   });
 
   it("resolves the best variant when subType is omitted", () => {
-    expect(qm.sparklinesFor([{ productId: 1 }]).get(1)).toEqual([25, 40, 50]);
+    const sparks = qm.sparklinesFor([{ productId: 1 }]);
+    expect(sparks.get(qm.sparkKey(1, "Holofoil"))).toEqual([25, 40, 50]);
+  });
+
+  it("keeps per-variant series distinct for the same product", () => {
+    const sparks = qm.sparklinesFor([
+      { productId: 1, subType: "Holofoil" },
+      { productId: 1, subType: "Normal" },
+    ]);
+    expect(sparks.get(qm.sparkKey(1, "Holofoil"))).toEqual([25, 40, 50]);
+    expect(sparks.get(qm.sparkKey(1, "Normal"))).toEqual([4, 5]);
   });
 });
 
@@ -160,6 +170,18 @@ describe("batchCards (D9)", () => {
     const [row] = qm.batchCards([{ productId: 4 }]);
     expect(row.setSlug).toBe("set-200");
     expect(row.language).toBe("jp");
+  });
+
+  it("returns one row per variant when the same product is requested twice", () => {
+    const rows = qm.batchCards([
+      { productId: 1, subType: "Holofoil" },
+      { productId: 1, subType: "Normal" },
+    ]);
+    expect(rows).toHaveLength(2);
+    expect(rows.map((r) => [r.subType, r.market])).toEqual([
+      ["Holofoil", 50],
+      ["Normal", 5],
+    ]);
   });
 });
 
