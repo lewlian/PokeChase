@@ -32,7 +32,7 @@ export default function MoversPage() {
           Biggest 7-day changes in TCGplayer market price (items $5+ only).
         </p>
       </header>
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {[
           { title: "Top gainers", rows: up },
           { title: "Top losers", rows: down },

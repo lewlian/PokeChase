@@ -52,7 +52,7 @@ export function GlossaryList({
           onChange={(e) => setQ(e.target.value)}
           placeholder="Filter terms…"
           aria-label="Filter glossary terms"
-          className="w-64 rounded-full border border-line bg-surface px-4 py-2 text-sm outline-none placeholder:text-mut focus:border-pokeblue"
+          className="w-full rounded-full border border-line bg-surface px-4 py-2 text-base outline-none placeholder:text-mut focus:border-pokeblue sm:w-64 sm:text-sm"
         />
         <div className="flex flex-wrap gap-1">
           {CATEGORIES.map((c) => (
@@ -77,7 +77,7 @@ export function GlossaryList({
           No terms match “{q}”.
         </p>
       ) : (
-        <dl className="grid gap-3 md:grid-cols-2">
+        <dl className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {shown.map((t) => {
             const ex = examples[t.term];
             return (

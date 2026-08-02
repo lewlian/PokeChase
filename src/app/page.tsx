@@ -25,7 +25,7 @@ export default function HomePage() {
   return (
     <div className="space-y-12">
       {/* Hero */}
-      <section className="rounded-2xl border border-line bg-surface p-8 sm:p-10">
+      <section className="rounded-2xl border border-line bg-surface p-6 sm:p-10">
         <p className="mb-2 text-xs font-bold uppercase tracking-widest text-pokeblue">
           Pokémon TCG market dashboard
         </p>
@@ -109,7 +109,7 @@ export default function HomePage() {
               All movers →
             </Link>
           </div>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {[
               { title: "Gainers", rows: up },
               { title: "Losers", rows: down },

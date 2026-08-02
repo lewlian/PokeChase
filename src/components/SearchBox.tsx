@@ -51,7 +51,17 @@ interface Item {
   language: string;
 }
 
-export function SearchBox() {
+export function SearchBox({
+  fullWidth = false,
+  autoFocus = false,
+  onNavigate,
+}: {
+  /** Stretch to the container (mobile header row) instead of the fixed desktop pill. */
+  fullWidth?: boolean;
+  autoFocus?: boolean;
+  /** Called after a result is chosen — lets the mobile header collapse the search row. */
+  onNavigate?: () => void;
+} = {}) {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [results, setResults] = useState<CompactResults | null>(null);
@@ -89,13 +99,17 @@ export function SearchBox() {
     };
   }, [q]);
 
-  // Close on outside click
+  // Close on outside click / tap
   useEffect(() => {
-    function onDown(e: MouseEvent) {
+    function onDown(e: MouseEvent | TouchEvent) {
       if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
     }
     document.addEventListener("mousedown", onDown);
-    return () => document.removeEventListener("mousedown", onDown);
+    document.addEventListener("touchstart", onDown);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("touchstart", onDown);
+    };
   }, []);
 
   const items = useMemo<Item[]>(() => {
@@ -136,6 +150,7 @@ export function SearchBox() {
 
   function go(href: string) {
     setOpen(false);
+    onNavigate?.();
     router.push(href);
   }
 
@@ -183,13 +198,20 @@ export function SearchBox() {
         aria-expanded={open}
         aria-controls="search-typeahead"
         aria-autocomplete="list"
-        className="w-56 rounded-full border border-line bg-bg px-4 py-1.5 text-sm outline-none placeholder:text-mut focus:border-pokeblue lg:w-72"
+        autoFocus={autoFocus}
+        className={`rounded-full border border-line bg-bg px-4 outline-none placeholder:text-mut focus:border-pokeblue ${
+          fullWidth
+            ? "w-full py-2 text-base" // ≥16px so iOS Safari doesn't zoom on focus
+            : "w-56 py-1.5 text-sm lg:w-72"
+        }`}
       />
 
       {open && (showSamples || q.trim().length >= 2) ? (
         <div
           id="search-typeahead"
-          className="absolute right-0 top-full z-50 mt-2 w-[min(92vw,34rem)] overflow-hidden rounded-xl border border-line bg-surface shadow-2xl"
+          className={`absolute top-full z-50 mt-2 overflow-hidden rounded-xl border border-line bg-surface shadow-2xl ${
+            fullWidth ? "inset-x-0" : "right-0 w-[min(92vw,34rem)]"
+          }`}
         >
           {showSamples ? (
             <div className="p-3">
@@ -213,7 +235,7 @@ export function SearchBox() {
             </div>
           ) : hasResults ? (
             <div role="listbox" aria-label="Search results">
-              <ul className="max-h-96 overflow-y-auto py-1">
+              <ul className="max-h-[min(24rem,55vh)] overflow-y-auto py-1">
                 {items.map((item, i) => (
                   <li key={item.href} role="option" aria-selected={i === active}>
                     <button

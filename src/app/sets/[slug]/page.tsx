@@ -76,12 +76,15 @@ export default async function SetPage({ params, searchParams }: Props) {
         </div>
       </header>
 
-      <nav className="flex gap-1 border-b border-line" aria-label="Set sections">
+      <nav
+        className="flex gap-1 overflow-x-auto border-b border-line [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        aria-label="Set sections"
+      >
         {TABS.map(([key, label]) => (
           <Link
             key={key}
             href={`/sets/${slug}?tab=${key}`}
-            className={`rounded-t-lg px-4 py-2 text-sm font-semibold ${
+            className={`whitespace-nowrap rounded-t-lg px-3 py-2 text-sm font-semibold sm:px-4 ${
               tab === key
                 ? "border border-b-0 border-line bg-surface text-ink"
                 : "text-mut hover:text-ink"
@@ -138,7 +141,7 @@ function CardsTab({
   const rows = cardsForSet(groupId, sort);
   return (
     <>
-      <div className="flex items-center gap-2 text-sm">
+      <div className="flex flex-wrap items-center gap-2 text-sm">
         <span className="text-mut">Sort:</span>
         {(
           [

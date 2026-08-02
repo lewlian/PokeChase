@@ -34,7 +34,7 @@ export function GradedTable({
     <section className="rounded-2xl border border-line bg-surface p-5">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-display text-xl font-bold">Raw vs. graded market</h2>
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex flex-wrap items-center gap-2 text-xs">
           <span className="font-semibold uppercase tracking-wide text-mut">
             Research sold prices:
           </span>

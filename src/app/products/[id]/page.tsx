@@ -57,7 +57,7 @@ export default async function ProductPage({ params }: Props) {
         / <span className="text-ink">{product.name}</span>
       </nav>
 
-      <div className="grid gap-8 md:grid-cols-[minmax(0,320px)_1fr]">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,320px)_1fr]">
         <div className="card-hover flex items-center justify-center rounded-2xl border border-line bg-surface p-6">
           <img
             src={imageAt(product.imageUrl, "in_1000x1000")}
