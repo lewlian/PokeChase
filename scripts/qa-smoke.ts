@@ -12,6 +12,8 @@ interface Check {
   path: string;
   mustContain: string[];
   status?: number;
+  /** Accept any of these statuses (e.g. 401 signed-out vs 503 unconfigured). */
+  statusAnyOf?: number[];
 }
 
 async function main() {
@@ -80,19 +82,34 @@ async function main() {
     { path: "/api/v1/search?q=charizard", mustContain: ['"cards"', '"sets"', '"sealed"'] },
     { path: "/api/v1/search?q=x", mustContain: ["at least 2"], status: 400 },
     { path: "/api/v1/history/not-a-number", mustContain: ["invalid"], status: 400 },
+    // market views
+    { path: "/market", mustContain: ["Market", "Min price", "cards", "7d %"] },
+    { path: "/market?sort=d7&min=20", mustContain: ["Market", "cards"] },
+    { path: "/market?min=100&lang=jp", mustContain: ["Market"] },
+    {
+      path: `/sets/${sets[0].slug}?tab=cards&view=table`,
+      mustContain: ["View:", "Table", "7d %", "30d %", "Trend"],
+    },
+    // auth surfaces (signed out / unconfigured)
+    { path: "/login", mustContain: ["Sign in"] },
+    // /api/v1/me: 401 signed out when Supabase is configured, 503 otherwise —
+    // never 200 and never a 500
+    { path: "/api/v1/me/watchlists", mustContain: ["error"], statusAnyOf: [401, 503] },
+    { path: "/api/v1/me/portfolio", mustContain: ["error"], statusAnyOf: [401, 503] },
+    { path: `/api/v1/me/card-state/${anyCard.id}`, mustContain: ["error"], statusAnyOf: [401, 503] },
   ];
 
   let failed = 0;
   for (const c of checks) {
-    const expect = c.status ?? 200;
+    const expected = c.statusAnyOf ?? [c.status ?? 200];
     try {
       const res = await fetch(BASE + c.path, { signal: AbortSignal.timeout(30_000) });
       const body = await res.text();
       const missing = c.mustContain.filter((m) => !body.includes(m));
-      if (res.status !== expect || missing.length > 0) {
+      if (!expected.includes(res.status) || missing.length > 0) {
         failed++;
         console.error(
-          `FAIL ${c.path} — status ${res.status} (want ${expect})${
+          `FAIL ${c.path} — status ${res.status} (want ${expected.join("/")})${
             missing.length ? `, missing: ${missing.join(" | ")}` : ""
           }`,
         );

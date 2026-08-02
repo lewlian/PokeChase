@@ -186,41 +186,6 @@ export const jobRuns = sqliteTable(
   (t) => [index("jobs_job_idx").on(t.job, t.startedAt)],
 );
 
-/* ---------------- v2-ready (accounts & portfolio, unused in v1) ------------- */
-
-export const users = sqliteTable("users", {
-  id: text("id").primaryKey(),
-  email: text("email").notNull().unique(),
-  displayName: text("display_name"),
-  createdAt: text("created_at").notNull(),
-});
-
-export const collectionItems = sqliteTable(
-  "collection_items",
-  {
-    id: integer("id").primaryKey({ autoIncrement: true }),
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id),
-    productId: integer("product_id").notNull(),
-    subType: text("sub_type").notNull().default("Normal"),
-    quantity: integer("quantity").notNull().default(1),
-    condition: text("condition"),
-    acquiredPrice: real("acquired_price"),
-    acquiredAt: text("acquired_at"),
-  },
-  (t) => [index("coll_user_idx").on(t.userId)],
-);
-
-export const portfolioSnapshots = sqliteTable(
-  "portfolio_snapshots",
-  {
-    id: integer("id").primaryKey({ autoIncrement: true }),
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id),
-    date: text("date").notNull(),
-    totalValue: real("total_value").notNull(),
-  },
-  (t) => [uniqueIndex("port_uq").on(t.userId, t.date)],
-);
+// User data (accounts, watchlists, portfolio) lives in Supabase Postgres —
+// see supabase/migrations/. The v1 placeholder tables (users,
+// collection_items, portfolio_snapshots) were dropped in migration 0004.

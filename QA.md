@@ -160,3 +160,43 @@ verified present via `launchctl list`. Manual pipeline run end-to-end exit 0.
   Verified: production build clean, and a real boot test with the flag set —
   server Ready, API 200, "[ingest-scheduler] next daily ingest at
   2026-07-31T21:05:00Z" logged. 111/111 tests.
+
+## Addendum — accounts, market screener, watchlists & portfolio (2026-08-02)
+
+- **Market views (Phase A):** /market screener over all 28.9k cards — best
+  variant priced at the latest snapshot, variant-consistent 7d/30d changes
+  via anchor-date self-joins (movers pattern; never a per-row correlated
+  subquery), min-price/era/language filters, 50-row pagination, inline-SVG
+  sparklines. Set pages gained a Grid/Table toggle (+7d/30d sorts).
+  Verified live against the full DB: 16,762 cards ≥$1, top gainers sorted
+  +245.5% with matching green sparklines, JP filter isolates M-series,
+  375px shows no horizontal overflow (table scrolls in its own container).
+- **Auth (Phase B):** Supabase email/password + Google (Apple = one array
+  entry + dashboard config later). Next 16 proxy.ts refreshes sessions and
+  gates /portfolio, /watchlists, /account (verified: 307 →
+  /login?next=%2Fportfolio signed out; public routes 200; unreachable or
+  unconfigured Supabase degrades to signed-out, never crashes; builds pass
+  with and without env vars). Dockerfile ARGs inline NEXT_PUBLIC_* at build.
+- **Watchlists (Phase C):** multiple named lists (lazy-created default),
+  per-variant items, /api/v1/me/* route handlers (401 signed out, 503
+  unconfigured, 400 on invalid input incl. malformed JSON, 409 duplicate
+  name), card-page star picker + owned-qty stepper, search-to-add.
+  batchCards/sparklinesFor are (product, variant)-keyed so the same card in
+  two variants stays two rows.
+- **Portfolio (Phase D):** value-only dashboard — total, 1d/7d/30d chips,
+  retroactive value-over-time chart computed on the fly from
+  price_snapshots (forward-filled union of dates; disclaimed in the UI),
+  holdings table with qty steppers and per-row value.
+- **Cleanup (Phase E):** dropped the dormant v1 placeholder tables
+  (users/collection_items/portfolio_snapshots) via drizzle migration 0004 —
+  user data lives in Supabase (supabase/migrations/0001_user_data.sql, RLS
+  owner-only, no service-role key anywhere).
+- Tests: 181/181 unit+integration (first DB-backed fixture:
+  tests/helpers/db.ts spins a migrated throwaway SQLite; route handlers
+  tested against a mocked Supabase client). Smoke: 39/39 (added /market,
+  set table view, /login, and 401/503 checks on /api/v1/me/*). Typecheck,
+  lint, and production builds clean. Zero console errors on new pages.
+- Deferred until the Supabase project exists (owner setup checklist in
+  docs/PLAN-accounts-market-portfolio.md): live signup/login/Google OAuth
+  E2E, the two-account RLS isolation test, and signed-in
+  watchlist/portfolio UI verification in production.
