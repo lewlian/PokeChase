@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { SearchBox } from "./SearchBox";
+import { AuthButton, type HeaderUser } from "./AuthButton";
 
 const NAV = [
   ["/sets", "Sets"],
@@ -23,7 +24,7 @@ function Pokeball({ className = "" }: { className?: string }) {
   );
 }
 
-export function SiteHeader() {
+export function SiteHeader({ user }: { user: HeaderUser | null }) {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -90,6 +91,8 @@ export function SiteHeader() {
             </svg>
           )}
         </button>
+
+        <AuthButton user={user} />
       </div>
 
       {searchOpen ? (

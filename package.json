@@ -24,6 +24,8 @@
     "ingest:bootstrap:bg": "sh -c \"nohup npm run ingest:bootstrap > /tmp/bootstrap.log 2>&1 & echo bootstrap started, log: /tmp/bootstrap.log\""
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.4",
+    "@supabase/supabase-js": "^2.111.0",
     "better-sqlite3": "^13.0.2",
     "drizzle-orm": "^0.45.2",
     "next": "16.2.12",

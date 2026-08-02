@@ -12,6 +12,14 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY . .
+
+# NEXT_PUBLIC_* vars are inlined into the client bundle at build time.
+# Railway forwards service variables as build args when matching ARGs exist.
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
+
 RUN npm run build
 
 ENV NODE_ENV=production

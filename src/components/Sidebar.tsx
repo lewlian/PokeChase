@@ -12,7 +12,7 @@ export interface EraNavItem {
   setCount: number;
 }
 
-export function Sidebar({ eras }: { eras: EraNavItem[] }) {
+export function Sidebar({ eras, signedIn = false }: { eras: EraNavItem[]; signedIn?: boolean }) {
   const pathname = usePathname();
 
   return (
@@ -37,6 +37,36 @@ export function Sidebar({ eras }: { eras: EraNavItem[] }) {
           </svg>
           Dashboard
         </Link>
+
+        {signedIn ? (
+          <div>
+            <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-mut">
+              My collection
+            </p>
+            <ul className="space-y-0.5">
+              {(
+                [
+                  ["/portfolio", "Portfolio"],
+                  ["/watchlists", "Watchlists"],
+                ] as const
+              ).map(([href, label]) => {
+                const active = pathname === href || pathname.startsWith(`${href}/`);
+                return (
+                  <li key={href}>
+                    <Link
+                      href={href}
+                      className={`block rounded-lg px-3 py-1.5 text-sm font-medium ${
+                        active ? "bg-surface2 text-ink" : "hover:bg-surface2"
+                      }`}
+                    >
+                      {label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ) : null}
 
         <div>
           <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-mut">

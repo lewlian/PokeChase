@@ -3,6 +3,7 @@ import { Fredoka, Inter } from "next/font/google";
 import { Sidebar } from "@/components/Sidebar";
 import { SiteHeader } from "@/components/SiteHeader";
 import { eraSummaries } from "@/lib/queries";
+import { getUser } from "@/lib/supabase/server";
 import "./globals.css";
 
 const fredoka = Fredoka({
@@ -26,17 +27,24 @@ export const metadata: Metadata = {
     "Every Pokémon TCG set since 1999: chase cards, daily market prices, sealed product values, and a full collecting guide.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const eras = eraSummaries();
+  const user = await getUser();
+  const headerUser = user?.email
+    ? {
+        email: user.email,
+        avatarUrl: (user.user_metadata?.avatar_url as string | undefined) ?? null,
+      }
+    : null;
   return (
     <html lang="en" className={`${fredoka.variable} ${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
-        <SiteHeader />
+        <SiteHeader user={headerUser} />
 
         <div className="mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 py-8">
-          <Sidebar eras={eras} />
+          <Sidebar eras={eras} signedIn={headerUser !== null} />
           <main className="min-w-0 flex-1">{children}</main>
         </div>
 
