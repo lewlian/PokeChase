@@ -12,12 +12,15 @@ import {
   sealedForSet,
   setBySlug,
 } from "@/lib/queries";
+import { cardsForSetWithChange, sparklinesFor } from "@/lib/queries-market";
+import { CardsTable, type CardsTableRow } from "@/components/CardsTable";
+import { SET_TABLE_SORTS, sortSetRows, type SetTableSort } from "@/lib/market-params";
 import type { SealedType } from "@/db/schema";
 
 
 interface Props {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ tab?: string; sort?: string }>;
+  searchParams: Promise<{ tab?: string; sort?: string; view?: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -42,10 +45,12 @@ export default async function SetPage({ params, searchParams }: Props) {
     | "chase"
     | "cards"
     | "sealed";
-  const sort = (["number", "price", "name"].includes(sp.sort ?? "") ? sp.sort : "number") as
-    | "number"
-    | "price"
-    | "name";
+  const view = sp.view === "table" ? "table" : "grid";
+  // d7/d30 sorts only exist in the table view, which has change columns
+  const validSorts = view === "table" ? SET_TABLE_SORTS : (["number", "price", "name"] as const);
+  const sort = ((validSorts as readonly string[]).includes(sp.sort ?? "")
+    ? sp.sort
+    : "number") as SetTableSort;
 
   return (
     <div className="space-y-6">
@@ -96,7 +101,9 @@ export default async function SetPage({ params, searchParams }: Props) {
       </nav>
 
       {tab === "chase" ? <ChaseTab groupId={set.groupId} /> : null}
-      {tab === "cards" ? <CardsTab groupId={set.groupId} slug={slug} sort={sort} /> : null}
+      {tab === "cards" ? (
+        <CardsTab groupId={set.groupId} slug={slug} sort={sort} view={view} />
+      ) : null}
       {tab === "sealed" ? <SealedTab groupId={set.groupId} /> : null}
     </div>
   );
@@ -133,26 +140,57 @@ function CardsTab({
   groupId,
   slug,
   sort,
+  view,
 }: {
   groupId: number;
   slug: string;
-  sort: "number" | "price" | "name";
+  sort: SetTableSort;
+  view: "grid" | "table";
 }) {
-  const rows = cardsForSet(groupId, sort);
+  const sortChoices =
+    view === "table"
+      ? ([
+          ["number", "Card number"],
+          ["price", "Price"],
+          ["name", "Name"],
+          ["d7", "7d %"],
+          ["d30", "30d %"],
+        ] as const)
+      : ([
+          ["number", "Card number"],
+          ["price", "Price"],
+          ["name", "Name"],
+        ] as const);
+  const viewParam = view === "table" ? "&view=table" : "";
+  const gridRows =
+    view === "grid" ? cardsForSet(groupId, sort as "number" | "price" | "name") : null;
+  const tableRows = view === "table" ? sortSetRows(cardsForSetWithChange(groupId), sort) : null;
+  const count = (gridRows ?? tableRows ?? []).length;
   return (
     <>
       <div className="flex flex-wrap items-center gap-2 text-sm">
-        <span className="text-mut">Sort:</span>
+        <span className="text-mut">View:</span>
         {(
           [
-            ["number", "Card number"],
-            ["price", "Price"],
-            ["name", "Name"],
+            ["grid", "Grid"],
+            ["table", "Table"],
           ] as const
         ).map(([key, label]) => (
           <Link
             key={key}
-            href={`/sets/${slug}?tab=cards&sort=${key}`}
+            href={`/sets/${slug}?tab=cards&sort=${["d7", "d30"].includes(sort) && key === "grid" ? "price" : sort}${key === "table" ? "&view=table" : ""}`}
+            className={`rounded-full px-3 py-1 font-medium ${
+              view === key ? "bg-pokeyellow text-[#1c2033]" : "bg-surface2 text-mut hover:text-ink"
+            }`}
+          >
+            {label}
+          </Link>
+        ))}
+        <span className="text-mut">Sort:</span>
+        {sortChoices.map(([key, label]) => (
+          <Link
+            key={key}
+            href={`/sets/${slug}?tab=cards&sort=${key}${viewParam}`}
             className={`rounded-full px-3 py-1 font-medium ${
               sort === key ? "bg-pokeblue text-white" : "bg-surface2 text-mut hover:text-ink"
             }`}
@@ -160,15 +198,30 @@ function CardsTab({
             {label}
           </Link>
         ))}
-        <span className="ml-auto tabular-nums text-mut">{rows.length} cards</span>
+        <span className="ml-auto tabular-nums text-mut">{count} cards</span>
       </div>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-        {rows.map((c) => (
-          <CardTile key={c.productId} {...c} />
-        ))}
-      </div>
+      {tableRows ? (
+        <SetCardsTable rows={tableRows} />
+      ) : (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          {(gridRows ?? []).map((c) => (
+            <CardTile key={c.productId} {...c} />
+          ))}
+        </div>
+      )}
     </>
   );
+}
+
+function SetCardsTable({ rows }: { rows: ReturnType<typeof cardsForSetWithChange> }) {
+  const sparks = sparklinesFor(
+    rows.filter((r) => r.subType).map((r) => ({ productId: r.productId, subType: r.subType })),
+  );
+  const tableRows: CardsTableRow[] = rows.map((r) => ({
+    ...r,
+    spark: sparks.get(r.productId) ?? [],
+  }));
+  return <CardsTable rows={tableRows} />;
 }
 
 function SealedTab({ groupId }: { groupId: number }) {

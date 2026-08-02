@@ -7,6 +7,7 @@ import { SearchBox } from "./SearchBox";
 
 const NAV = [
   ["/sets", "Sets"],
+  ["/market", "Market"],
   ["/movers", "Movers"],
   ["/learn", "Learn"],
 ] as const;
