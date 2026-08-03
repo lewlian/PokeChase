@@ -46,6 +46,51 @@ export const GUIDES: Guide[] = [
     ],
   },
   {
+    slug: "reading-rarities",
+    title: "Reading rarities: Common to SAR, in every era and language",
+    blurb:
+      "The symbol next to the collector number, the modern IR/SIR ladder, and how Japanese AR/SAR codes map to English rarities.",
+    minutes: 8,
+    sections: [
+      {
+        h: "Start at the bottom corner",
+        ps: [
+          "Every English card since Base Set prints its rarity beside the collector number: a circle for Common, a diamond for Uncommon, a star for Rare. Holo and Reverse Holo are finishes, not separate symbols — a Holo Rare is a star-rarity card with foil artwork, while a Reverse Holo (available for most commons, uncommons, and rares since Legendary Collection in 2002) foils everything except the artwork. That's why one card can have several prices on this site: each variant is tracked separately.",
+          "One tell works in every era and both languages: secret rares carry a collector number higher than the set total — 113/105, 215/203, 279/264. If the numerator beats the denominator, you're holding a secret rare.",
+        ],
+      },
+      {
+        h: "The modern English ladder (Scarlet & Violet onward)",
+        ps: [
+          "Above the classic circle/diamond/star, today's sets stack artwork rarities. Double Rare (two black stars) is the plain ex Pokémon. Ultra Rare (two silver stars) is the full-art ex or Supporter. Illustration Rare (IR, one gold star) is the artwork treatment of an ordinary Pokémon — the 'cheap beautiful cards' of a set. Special Illustration Rare (SIR, two gold stars) is the successor to alt arts and usually the set's biggest chase. Hyper Rare (three gold stars) is the gold-frame card, and despite the name it typically prices below the SIRs.",
+          "Two oddballs worth recognizing: ACE SPEC cards (bright magenta frame, one per deck rule) and Shiny Rares from shiny-vault-style sets like Paldean Fates, where the Pokémon is its shiny coloration on a white-sparkle frame. The Mega era keeps the SV ladder and adds Mega-branded top slots — our data labels them Mega Hyper Rare and Mega Attack Rare.",
+        ],
+        visual: "rarity-ladder",
+      },
+      {
+        h: "Earlier eras used different names for the top slots",
+        ps: [
+          "Vintage (1999–2002) had no artwork rarities at all — just circle/diamond/star plus holo. Value instead splits by print run: the same Charizard exists as Unlimited, Shadowless (no drop-shadow to the right of the art frame), and 1st Edition (the stamp under the art's bottom-left corner), at wildly different prices. EX era (2003–07) added Pokémon-ex and the legendary Gold Star shinies — the star is literally in the card name. Diamond & Pearl brought Lv.X, HeartGold & SoulSilver brought Primes and two-card LEGENDs.",
+          "Black & White and XY standardized full-art EXs and secret golds and added BREAK (the sideways gold frame). Sun & Moon's chase slots were GX cards and rainbow 'Hyper' rares. Sword & Shield ran V/VMAX/VSTAR, plus three collector favorites: Alternate Arts (the era's grails, e.g. Moonbreon), Amazing Rares (comet-swirl foil), and the stamped subsets — Trainer Gallery numbers like TG12/TG30 and Shiny Vault numbers like SV107/SV122. Rarity names on PokéChase come straight from TCGplayer, so what you see in a set's table (Holo Rare, Secret Rare, Radiant Rare…) matches what you can filter and search.",
+        ],
+      },
+      {
+        h: "Japanese cards: letter codes instead of symbols",
+        ps: [
+          "Japanese cards skip the symbols and print a letter code in the bottom corner: C, U, R for the basic tiers, then RR (Double Rare — the ex cards), SR (Super Rare — full arts), UR (Ultra Rare — golds), and the artwork codes AR (Art Rare) and SAR (Special Art Rare). The mapping to English is direct: AR ↔ Illustration Rare, SAR ↔ Special Illustration Rare, RR ↔ Double Rare, SR ↔ Ultra Rare, UR ↔ Hyper Rare. Japanese sets also have no Reverse Holo line — parallel finishes are 'mirror' foils instead, and some sets add special foil stamps (the 151 Poké Ball and Master Ball mirrors are famous examples).",
+          "On PokéChase, Japanese sets (the M-series pages with the red JP chip) show TCGplayer's English translations of those codes — Art Rare, Special Art Rare, Super Rare, Mega Attack Rare — so filter with those names in the Market tab. Japanese printings usually release months before their English set, at different pull rates and prices: the same artwork can be significantly cheaper or pricier in Japanese, which is why we track both and chip every card EN or JP.",
+        ],
+        visual: "jp-vs-en-rarities",
+      },
+      {
+        h: "Cheat sheet",
+        ps: [
+          "Circle = Common, diamond = Uncommon, star = Rare — every English era. Number bigger than the set size = secret rare — every era, both languages. Gold star count (SV/Mega era): one = IR, two = SIR, three = gold Hyper. JP letter codes: RR = ex, SR = full art, UR = gold, AR = artwork card, SAR = special artwork card. Vintage value lives in the stamp: 1st Edition > Shadowless > Unlimited. When in doubt, open the card on PokéChase — the rarity is printed on every row, table, and card page.",
+        ],
+      },
+    ],
+  },
+  {
     slug: "sealed-products-explained",
     title: "Booster box vs ETB vs bundle: every sealed product explained",
     blurb: "What's actually inside each product type, and how to compare them on price-per-pack.",

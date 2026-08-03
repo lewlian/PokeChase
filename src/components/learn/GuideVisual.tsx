@@ -89,6 +89,29 @@ function RarityLadder() {
   );
 }
 
+function JpVsEnRarities() {
+  const specs: Array<{ caption: string; card: ExampleCard | null }> = [
+    { caption: "EN · Illustration Rare", card: exampleByRarity("Illustration Rare", "median") },
+    { caption: "JP · Art Rare (AR)", card: exampleByRarity("Art Rare", "median") },
+    {
+      caption: "EN · Special Illustration Rare",
+      card: exampleByRarity("Special Illustration Rare", "median"),
+    },
+    { caption: "JP · Special Art Rare (SAR)", card: exampleByRarity("Special Art Rare", "median") },
+    { caption: "EN · Ultra Rare", card: exampleByRarity("Ultra Rare", "median") },
+    { caption: "JP · Super Rare (SR)", card: exampleByRarity("Super Rare", "median") },
+  ];
+  const cards = specs.filter((s) => s.card).map((s) => s.card!);
+  const captions = specs.filter((s) => s.card).map((s) => s.caption);
+  return (
+    <CardStrip
+      cards={cards}
+      captions={captions}
+      note="The same rarity tiers, two naming systems — English names on the left of each pair, the Japanese letter-code equivalent on the right. All prices are live."
+    />
+  );
+}
+
 function CharacterGallery({ name }: { name: string }) {
   const cards = characterGallery(name, 6);
   return (
@@ -295,6 +318,8 @@ export function GuideVisual({ spec }: { spec: string }) {
   switch (kind) {
     case "rarity-ladder":
       return <RarityLadder />;
+    case "jp-vs-en-rarities":
+      return <JpVsEnRarities />;
     case "alt-art-showcase":
       return <AltArtShowcase />;
     case "character-gallery":
