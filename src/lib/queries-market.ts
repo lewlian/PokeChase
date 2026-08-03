@@ -176,8 +176,7 @@ export function sparklinesFor(refs: VariantRef[]): Map<string, number[]> {
   const db = getDb();
 
   const bestFor = new Map<number, string>();
-  const needBest = [...new Set(refs.filter((r) => !r.subType).map((r) => r.productId))];
-  for (const chunk of chunked(needBest)) {
+  for (const chunk of chunked([...new Set(refs.map((r) => r.productId))])) {
     const rows = db.all<{ productId: number; subType: string }>(sql`
       with best as (${bestCte(anchors.latest)})
       select product_id as productId, sub_type as subType from best
@@ -186,10 +185,13 @@ export function sparklinesFor(refs: VariantRef[]): Map<string, number[]> {
     for (const r of rows) bestFor.set(r.productId, r.subType);
   }
 
+  // Fetch the requested variant *and* the best variant; callers that fall back
+  // to the best variant (see batchCards) then still find a series.
   const pairs = new Map<string, [number, string]>();
   for (const r of refs) {
-    const st = r.subType ?? bestFor.get(r.productId);
-    if (st) pairs.set(sparkKey(r.productId, st), [r.productId, st]);
+    for (const st of [r.subType, bestFor.get(r.productId)]) {
+      if (st) pairs.set(sparkKey(r.productId, st), [r.productId, st]);
+    }
   }
 
   for (const chunk of chunked([...pairs.values()])) {
@@ -238,10 +240,11 @@ export function batchCards(refs: VariantRef[]): BatchCardRow[] {
   if (!anchors || refs.length === 0) return [];
   const db = getDb();
 
-  // Resolve best-variant subTypes so every ref is a concrete pair.
+  // Best variant per product — used both for refs that don't name a variant
+  // and as a fallback for stored variants that carry no price (a saved
+  // "Normal" on a card that only prints in Holofoil would otherwise show "—").
   const bestFor = new Map<number, string>();
-  const needBest = [...new Set(refs.filter((r) => !r.subType).map((r) => r.productId))];
-  for (const chunk of chunked(needBest)) {
+  for (const chunk of chunked([...new Set(refs.map((r) => r.productId))])) {
     const rows = db.all<{ productId: number; subType: string }>(sql`
       with best as (${bestCte(anchors.latest)})
       select product_id as productId, sub_type as subType from best
@@ -278,10 +281,20 @@ export function batchCards(refs: VariantRef[]): BatchCardRow[] {
     for (const r of rows) meta.set(r.productId, r);
   }
 
-  // Market at the three anchor dates for exactly the requested pairs.
-  const priced = [...pairs.values()].filter((p): p is { productId: number; subType: string } =>
-    Boolean(p.subType),
-  );
+  // Market at the three anchor dates. Query both the requested variant and
+  // the product's best variant, so a stored variant with no prices can fall
+  // back rather than render empty.
+  const priced: Array<{ productId: number; subType: string }> = [];
+  const seenPair = new Set<string>();
+  for (const p of pairs.values()) {
+    for (const st of [p.subType, bestFor.get(p.productId)]) {
+      if (!st) continue;
+      const k = sparkKey(p.productId, st);
+      if (seenPair.has(k)) continue;
+      seenPair.add(k);
+      priced.push({ productId: p.productId, subType: st });
+    }
+  }
   const priceKey = (id: number, st: string, date: string) => `${id}|${st}|${date}`;
   const prices = new Map<string, number>();
   for (const chunk of chunked(priced)) {
@@ -305,12 +318,20 @@ export function batchCards(refs: VariantRef[]): BatchCardRow[] {
   for (const p of pairs.values()) {
     const m = meta.get(p.productId);
     if (!m) continue;
-    const cur = p.subType ? prices.get(priceKey(p.productId, p.subType, anchors.latest)) : undefined;
-    const p7 = p.subType && anchors.d7 ? prices.get(priceKey(p.productId, p.subType, anchors.d7)) : undefined;
-    const p30 = p.subType && anchors.d30 ? prices.get(priceKey(p.productId, p.subType, anchors.d30)) : undefined;
+    // Use the requested variant when it has a current price; otherwise the
+    // best variant (stored 'Normal' on a Holofoil-only card, delisted variant…)
+    const best = bestFor.get(p.productId);
+    const hasOwnPrice =
+      p.subType !== null && prices.has(priceKey(p.productId, p.subType, anchors.latest));
+    const subType = hasOwnPrice ? p.subType : (best ?? p.subType);
+    const at = (date: string | null) =>
+      subType && date ? prices.get(priceKey(p.productId, subType, date)) : undefined;
+    const cur = at(anchors.latest);
+    const p7 = at(anchors.d7);
+    const p30 = at(anchors.d30);
     out.push({
       ...m,
-      subType: p.subType,
+      subType,
       market: cur ?? null,
       d7Pct: pct(cur, p7),
       d30Pct: pct(cur, p30),

@@ -172,6 +172,17 @@ describe("batchCards (D9)", () => {
     expect(row.language).toBe("jp");
   });
 
+  it("falls back to the best variant when the stored variant has no price", () => {
+    // card 1 only prints Holofoil/Normal — a saved "Reverse Holofoil" (or the
+    // 'Normal' default on a holo-only card) must still price and chart
+    const [row] = qm.batchCards([{ productId: 1, subType: "Reverse Holofoil" }]);
+    expect(row.subType).toBe("Holofoil");
+    expect(row.market).toBe(50);
+    expect(row.d7Pct).toBeCloseTo(25);
+    const sparks = qm.sparklinesFor([{ productId: 1, subType: "Reverse Holofoil" }]);
+    expect(sparks.get(qm.sparkKey(1, "Holofoil"))).toEqual([25, 40, 50]);
+  });
+
   it("returns one row per variant when the same product is requested twice", () => {
     const rows = qm.batchCards([
       { productId: 1, subType: "Holofoil" },
