@@ -1,6 +1,7 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest } from "next/server";
 import { getServerSupabase } from "@/lib/supabase/server";
 import { safeNextPath } from "@/lib/auth-redirect";
+import { redirectToPath } from "@/lib/http-redirect";
 
 /** OAuth / email-confirmation landing: exchange the auth code for a session
  *  cookie, then continue to the sanitized ?next= destination. */
@@ -15,16 +16,15 @@ export async function GET(request: NextRequest) {
   const supabase = await getServerSupabase();
   if (supabase && code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) return NextResponse.redirect(new URL(next, request.url));
+    if (!error) return redirectToPath(next);
     // A replayed callback (browser back/refresh, double-fire) reports the
     // code as spent even though the first exchange succeeded — if a valid
     // session already exists, treat it as success.
     const { data } = await supabase.auth.getUser();
-    if (data.user) return NextResponse.redirect(new URL(next, request.url));
+    if (data.user) return redirectToPath(next);
   }
 
-  const login = new URL("/login", request.url);
-  login.searchParams.set("error", "auth");
-  if (providerError) login.searchParams.set("reason", providerError.slice(0, 200));
-  return NextResponse.redirect(login);
+  const params = new URLSearchParams({ error: "auth" });
+  if (providerError) params.set("reason", providerError.slice(0, 200));
+  return redirectToPath(`/login?${params}`);
 }

@@ -1,8 +1,9 @@
-import { NextResponse, type NextRequest } from "next/server";
 import { getServerSupabase } from "@/lib/supabase/server";
+import { redirectToPath } from "@/lib/http-redirect";
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   const supabase = await getServerSupabase();
   if (supabase) await supabase.auth.signOut();
-  return NextResponse.redirect(new URL("/", request.url), { status: 303 });
+  // 303 so the browser follows with GET after the POST
+  return redirectToPath("/", 303);
 }
