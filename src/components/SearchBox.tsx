@@ -40,6 +40,7 @@ const SAMPLES: Array<{ label: string; hint: string }> = [
   { label: "Evolving Skies", hint: "a set" },
   { label: "Prismatic Evolutions Elite Trainer Box", hint: "a sealed product" },
   { label: "151", hint: "set numbers work too" },
+  { label: "Chansey 113/165", hint: "find an exact card number" },
 ];
 
 interface Item {

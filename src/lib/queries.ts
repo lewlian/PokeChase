@@ -1,6 +1,7 @@
 import "server-only";
 import { sql, eq, asc } from "drizzle-orm";
 import { getDb, tables } from "@/db";
+import { parseSearchQuery } from "@/lib/search-query";
 import type { ChaseTier, SealedType } from "@/db/schema";
 
 /* ------------------------------- meta ---------------------------------- */
@@ -497,18 +498,49 @@ export function sealedLineup(groupId: number, types: SealedType[]): LineupProduc
 
 export function searchAll(q: string) {
   const db = getDb();
-  const like = `%${q.replace(/[%_]/g, " ").trim()}%`;
-  const cards = db.all<CardListRow & { setName: string; setSlug: string; language: string }>(sql`
-    select c.product_id as productId, c.name, c.number, c.sort_number as sortNumber,
-           c.rarity, c.image_url as imageUrl, s.name as setName, s.slug as setSlug, s.language,
-           (select max(ps.market) from price_snapshots ps
-             where ps.product_id = c.product_id
-               and ps.date = (select max(date) from price_snapshots ps2 where ps2.product_id = c.product_id)
-           ) as market
-    from cards c join sets s on s.group_id = c.group_id
-    where c.name like ${like}
-    order by market desc nulls last limit 36
-  `);
+  const clean = (s: string) => s.replace(/[%_]/g, " ").trim();
+  const like = `%${clean(q)}%`;
+
+  // Card-number queries ("113/165", "chansey 113", "tg12/tg30") filter on the
+  // printed number; everything else stays a plain name search.
+  const numberedWhere = (parsed: ReturnType<typeof parseSearchQuery>) => {
+    const numerator = clean(parsed.numerator!);
+    // Letter-prefixed numbers (TG12, GG05) match by prefix only — their
+    // numeric part would collide with ordinary card numbers.
+    const numberCond = /[a-z]/i.test(numerator)
+      ? sql`c.number like ${numerator + "%"}`
+      : sql`(c.sort_number = ${parsed.numeratorValue} or c.number like ${numerator + "/%"})`;
+    const withDenom = parsed.denominator
+      ? sql`${numberCond} and c.number like ${"%/" + clean(parsed.denominator)}`
+      : numberCond;
+    return parsed.name
+      ? sql`c.name like ${`%${clean(parsed.name)}%`} and ${withDenom}`
+      : withDenom;
+  };
+  const parsed = parseSearchQuery(q);
+  const cardsWhere = parsed.numerator ? numberedWhere(parsed) : sql`c.name like ${like}`;
+
+  const cardSearch = (where: ReturnType<typeof sql>) =>
+    db.all<CardListRow & { setName: string; setSlug: string; language: string }>(sql`
+      select c.product_id as productId, c.name, c.number, c.sort_number as sortNumber,
+             c.rarity, c.image_url as imageUrl, s.name as setName, s.slug as setSlug, s.language,
+             (select max(ps.market) from price_snapshots ps
+               where ps.product_id = c.product_id
+                 and ps.date = (select max(date) from price_snapshots ps2 where ps2.product_id = c.product_id)
+             ) as market
+      from cards c join sets s on s.group_id = c.group_id
+      where ${where}
+      order by market desc nulls last limit 36
+    `);
+
+  let cards = cardSearch(cardsWhere);
+  // Unmarked trailing tokens like "tg12" parse as names (protecting real
+  // names like Porygon2). When the name search comes up empty, re-parse
+  // loosely and retry as a number query ("charizard tg12", bare "tg12").
+  if (cards.length === 0 && !parsed.numerator) {
+    const loose = parseSearchQuery(q, true);
+    if (loose.numerator) cards = cardSearch(numberedWhere(loose));
+  }
   const sets = db.all<SetRow>(sql`
     select group_id as groupId, era_id as eraId, name, slug, release_date as releaseDate,
            is_supplemental as isSupplemental, logo_url as logoUrl, card_count as cardCount,
