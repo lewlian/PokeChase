@@ -200,3 +200,35 @@ verified present via `launchctl list`. Manual pipeline run end-to-end exit 0.
   docs/PLAN-accounts-market-portfolio.md): live signup/login/Google OAuth
   E2E, the two-account RLS isolation test, and signed-in
   watchlist/portfolio UI verification in production.
+
+## Addendum — live auth/RLS verification on production (2026-08-03)
+
+Supabase project connected (URL + publishable key as Railway build args and
+.env.local; confirm-email off; Google provider configured). Verified against
+https://pokechase.up.railway.app:
+
+- **Auth:** email signup returns a session immediately; avatar menu +
+  session-gated sidebar appear; sign-out clears; sign-in honours
+  `?next=` (landed on /watchlists). Gated routes 307 to
+  `/login?next=…`; public routes unaffected (/market 200).
+- **RLS two-account attack (accounts A and B, B's real JWT vs A's rows):**
+  list/read of A's watchlists, watchlist_items, portfolio_items → `[]`;
+  read of A's watchlist by exact UUID → `[]`; INSERT into A's watchlist →
+  **403 RLS violation**; DELETE of A's watchlist and PATCH of A's portfolio
+  quantity → 200 with **0 rows affected**. A's data byte-identical after.
+  App API: every /api/v1/me/* method → 401 without a session.
+- **Watchlists:** default list lazily created once; create trims whitespace
+  (201), duplicate name 409, empty name 400; add is idempotent; rename OK;
+  delete OK.
+- **Portfolio:** 2 × Latias & Latios GX → total $7,020.34 (= 2 × $3,510.17,
+  hand-checked against the card page); 1d/7d/30d chips populated; value
+  chart renders with the retroactive-history disclaimer; qty 0 removes.
+- **Bug found and fixed (800d948):** cards saved without an explicit variant
+  default to `Normal`, but many cards only print Holofoil/Reverse Holofoil —
+  those rows rendered as em-dashes. batchCards/sparklinesFor now fall back to
+  the best-priced variant and label the row with the variant used. Verified
+  live: Chansey 113/165 shows $1.40 · ▼5.4% 7d · ▲2.9% 30d · sparkline ·
+  "Reverse Holofoil". 195/195 unit+integration tests (incl. a regression
+  test for this case).
+- QA data removed afterwards; QA accounts remain in Supabase Auth for the
+  owner to delete.
