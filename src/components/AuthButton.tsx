@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { openSignIn } from "./AuthModal";
 
 export interface HeaderUser {
   email: string;
@@ -32,12 +33,13 @@ export function AuthButton({ user }: { user: HeaderUser | null }) {
 
   if (!user) {
     return (
-      <Link
-        href="/login"
+      <button
+        type="button"
+        onClick={() => openSignIn(window.location.pathname + window.location.search)}
         className="shrink-0 whitespace-nowrap rounded-full bg-pokeblue px-3 py-1.5 text-sm font-semibold text-white hover:opacity-90"
       >
         Sign in
-      </Link>
+      </button>
     );
   }
 

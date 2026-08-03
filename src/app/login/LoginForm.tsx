@@ -10,7 +10,7 @@ const OAUTH_PROVIDERS = [{ id: "google", label: "Continue with Google" }] as con
 
 type Mode = "signin" | "signup";
 
-export function LoginForm({ next }: { next: string }) {
+export function LoginForm({ next, onDone }: { next: string; onDone?: () => void }) {
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -44,6 +44,7 @@ export function LoginForm({ next }: { next: string }) {
           return;
         }
       }
+      onDone?.();
       // Full navigation so server components pick up the new session cookie
       window.location.assign(next);
     } finally {

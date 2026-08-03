@@ -95,7 +95,15 @@ describe("sparklinesFor (D3)", () => {
   });
 });
 
-const base = { sort: "price", dir: "desc", page: 1, minPrice: 1, eraId: null, language: null } as const;
+const base = {
+  sort: "price",
+  dir: "desc",
+  page: 1,
+  minPrice: 1,
+  eraId: null,
+  language: null,
+  q: "",
+} as const;
 
 describe("marketScreener", () => {
   it("filters by minimum price (D4)", () => {
@@ -131,6 +139,32 @@ describe("marketScreener", () => {
     expect(p2.rows).toHaveLength(13);
     const seen = new Set([...p1.rows, ...p2.rows].map((r) => r.productId));
     expect(seen.size).toBe(63);
+  });
+
+  it("filters by free-text name and card number (D11)", () => {
+    const byName = qm.marketScreener({ ...base, q: "alpha" });
+    expect(byName.total).toBe(1);
+    expect(byName.rows[0].productId).toBe(1);
+
+    const byNumber = qm.marketScreener({ ...base, q: "2/100" });
+    expect(byNumber.rows.map((r) => r.productId)).toEqual([2]);
+
+    // name + number together
+    expect(qm.marketScreener({ ...base, q: "alpha 1" }).rows.map((r) => r.productId)).toEqual([1]);
+    // no match
+    expect(qm.marketScreener({ ...base, q: "zzzznope" }).total).toBe(0);
+  });
+
+  it("text filter composes with the other filters and paginates (D12)", () => {
+    // 60 "Bulk NN" cards at $2 each, all in era-a
+    const all = qm.marketScreener({ ...base, q: "bulk" });
+    expect(all.total).toBe(60);
+    expect(all.rows).toHaveLength(50);
+    expect(qm.marketScreener({ ...base, q: "bulk", page: 2 }).rows).toHaveLength(10);
+    // min price excludes them entirely
+    expect(qm.marketScreener({ ...base, q: "bulk", minPrice: 20 }).total).toBe(0);
+    // era filter still applies
+    expect(qm.marketScreener({ ...base, q: "bulk", eraId: "era-b" }).total).toBe(0);
   });
 
   it("filters by era and language (D7, D8)", () => {

@@ -28,11 +28,27 @@ interface Props {
   /** Extra right-hand cell per row (qty stepper, remove button, …). */
   trailingHeader?: ReactNode;
   renderTrailing?: (row: CardsTableRow) => ReactNode;
+  /**
+   * Pre-rendered trailing cells keyed by `${productId}|${subType ?? ""}`.
+   * Prefer this over renderTrailing when the table sits inside a client
+   * component: a function prop can't cross that boundary, and the whole
+   * subtree silently fails to hydrate if one does.
+   */
+  trailing?: Record<string, ReactNode>;
 }
 
 /** Compact stock-market-style card table — shared by the set table view,
  *  /market screener, watchlists, and the portfolio holdings list. */
-export function CardsTable({ rows, showSet = false, trailingHeader, renderTrailing }: Props) {
+export function CardsTable({
+  rows,
+  showSet = false,
+  trailingHeader,
+  renderTrailing,
+  trailing,
+}: Props) {
+  const hasTrailing = Boolean(renderTrailing || trailing);
+  const trailingFor = (r: CardsTableRow): ReactNode =>
+    trailing ? trailing[`${r.productId}|${r.subType ?? ""}`] : renderTrailing?.(r);
   return (
     <div className="overflow-x-auto rounded-2xl border border-line bg-surface">
       <table className="w-full min-w-[36rem] text-sm">
@@ -43,7 +59,7 @@ export function CardsTable({ rows, showSet = false, trailingHeader, renderTraili
             <th className="px-3 py-3 text-right font-semibold">7d</th>
             <th className="px-3 py-3 text-right font-semibold">30d</th>
             <th className="px-3 py-3 text-right font-semibold">Trend</th>
-            {renderTrailing ? <th className="px-3 py-3 text-right font-semibold">{trailingHeader}</th> : null}
+            {hasTrailing ? <th className="px-3 py-3 text-right font-semibold">{trailingHeader}</th> : null}
           </tr>
         </thead>
         <tbody className="divide-y divide-line">
@@ -85,8 +101,8 @@ export function CardsTable({ rows, showSet = false, trailingHeader, renderTraili
                   <Sparkline series={r.spark ?? []} />
                 </span>
               </td>
-              {renderTrailing ? (
-                <td className="px-3 py-2 text-right">{renderTrailing(r)}</td>
+              {hasTrailing ? (
+                <td className="px-3 py-2 text-right">{trailingFor(r)}</td>
               ) : null}
             </tr>
           ))}

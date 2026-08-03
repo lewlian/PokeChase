@@ -1,12 +1,18 @@
 import "server-only";
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { supabaseEnv } from "./env";
 
 /** Request-scoped Supabase client for server components and route handlers.
- *  Null when Supabase isn't configured (auth features render signed-out). */
-export async function getServerSupabase(): Promise<SupabaseClient | null> {
+ *  Null when Supabase isn't configured (auth features render signed-out).
+ *
+ *  Memoized per request: a second client would carry the original cookies, so
+ *  once the first one refreshes an expiring session the stale refresh token
+ *  makes every later getUser() fail — which silently rendered pages as
+ *  signed-out while the layout showed the user as signed in. */
+export const getServerSupabase = cache(async function getServerSupabase(): Promise<SupabaseClient | null> {
   const env = supabaseEnv();
   if (!env) return null;
   const store = await cookies();
@@ -25,13 +31,14 @@ export async function getServerSupabase(): Promise<SupabaseClient | null> {
       },
     },
   });
-}
+});
 
 /** The authenticated user, validated against the Supabase Auth server
- *  (auth.getUser() — never trust the cookie session alone). */
-export async function getUser(): Promise<User | null> {
+ *  (auth.getUser() — never trust the cookie session alone). Memoized per
+ *  request so a layout and a page agree on the session. */
+export const getUser = cache(async function getUser(): Promise<User | null> {
   const supabase = await getServerSupabase();
   if (!supabase) return null;
   const { data } = await supabase.auth.getUser();
   return data.user ?? null;
-}
+});

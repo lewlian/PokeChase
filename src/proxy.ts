@@ -33,9 +33,12 @@ export async function proxy(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
   if (!user && PROTECTED.some((re) => re.test(path))) {
-    const login = new URL("/login", request.url);
-    login.searchParams.set("next", path + request.nextUrl.search);
-    return NextResponse.redirect(login);
+    // Land on the dashboard with the sign-in modal open rather than swapping
+    // the page for a bare login screen; ?next= resumes the original route.
+    const home = new URL("/", request.url);
+    home.searchParams.set("signin", "1");
+    home.searchParams.set("next", path + request.nextUrl.search);
+    return NextResponse.redirect(home);
   }
   return response;
 }

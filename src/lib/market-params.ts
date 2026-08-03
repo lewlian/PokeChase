@@ -15,7 +15,11 @@ export interface ScreenerParams {
   minPrice: number;
   eraId: string | null;
   language: "en" | "jp" | null;
+  /** Free-text filter (name or card number). Empty string = no filter. */
+  q: string;
 }
+
+export const MAX_QUERY_LEN = 60;
 
 const ERA_ID_RE = /^[a-z0-9-]{1,40}$/;
 
@@ -32,7 +36,8 @@ export function parseScreenerParams(sp: Record<string, string | undefined>): Scr
     Number.isFinite(rawMin) && rawMin >= 0 ? Math.min(rawMin, 1_000_000) : 1;
   const eraId = sp.era && ERA_ID_RE.test(sp.era) ? sp.era : null;
   const language = sp.lang === "en" || sp.lang === "jp" ? sp.lang : null;
-  return { sort, dir, page, minPrice, eraId, language };
+  const q = (sp.q ?? "").trim().slice(0, MAX_QUERY_LEN);
+  return { sort, dir, page, minPrice, eraId, language, q };
 }
 
 /** Query string for a screener state, omitting defaults to keep URLs clean. */
@@ -44,6 +49,7 @@ export function screenerQuery(p: Partial<ScreenerParams>): string {
   if (p.minPrice !== undefined && p.minPrice !== 1) q.set("min", String(p.minPrice));
   if (p.eraId) q.set("era", p.eraId);
   if (p.language) q.set("lang", p.language);
+  if (p.q) q.set("q", p.q);
   const s = q.toString();
   return s ? `?${s}` : "";
 }

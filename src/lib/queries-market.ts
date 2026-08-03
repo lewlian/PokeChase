@@ -2,6 +2,7 @@ import "server-only";
 import { sql, type SQL } from "drizzle-orm";
 import { getDb } from "@/db";
 import { latestSnapshotDate } from "@/lib/queries";
+import { cardMatchWhere, hasLooseNumberFallback } from "@/lib/card-filter";
 import {
   SCREENER_PAGE_SIZE,
   type ScreenerParams,
@@ -103,6 +104,14 @@ const SCREENER_ORDER: Record<ScreenerSort, Record<SortDir, SQL>> = {
   name: { asc: sql`name asc`, desc: sql`name desc` },
 };
 
+/** Rows matching a card condition, ignoring price/era filters — used only to
+ *  decide whether the loose number fallback is needed. */
+function countMatches(match: SQL): number {
+  return (
+    getDb().get<{ n: number }>(sql`select count(*) as n from cards c where ${match} limit 1`)?.n ?? 0
+  );
+}
+
 export function marketScreener(p: ScreenerParams): { rows: ScreenerRow[]; total: number } {
   const anchors = marketAnchors();
   if (!anchors) return { rows: [], total: 0 };
@@ -110,6 +119,17 @@ export function marketScreener(p: ScreenerParams): { rows: ScreenerRow[]; total:
   const filters = [sql`b.cur >= ${p.minPrice}`];
   if (p.eraId) filters.push(sql`s.era_id = ${p.eraId}`);
   if (p.language) filters.push(sql`s.language = ${p.language}`);
+  if (p.q) {
+    // Name or card number, same grammar as site search. Unmarked tokens like
+    // "tg12" read as names first, so fall back to the loose parse when the
+    // strict one matches nothing.
+    const strict = cardMatchWhere(p.q);
+    const match =
+      strict && hasLooseNumberFallback(p.q) && countMatches(strict) === 0
+        ? (cardMatchWhere(p.q, true) ?? strict)
+        : strict;
+    if (match) filters.push(match);
+  }
   const where = sql.join(filters, sql` and `);
   const total =
     db.get<{ n: number }>(sql`

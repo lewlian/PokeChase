@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fredoka, Inter } from "next/font/google";
+import { AuthModal } from "@/components/AuthModal";
 import { Sidebar } from "@/components/Sidebar";
 import { SiteHeader } from "@/components/SiteHeader";
 import { eraSummaries } from "@/lib/queries";
@@ -42,6 +43,7 @@ export default async function RootLayout({
     <html lang="en" className={`${fredoka.variable} ${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <SiteHeader user={headerUser} />
+        {headerUser ? null : <AuthModal />}
 
         <div className="mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 py-8">
           <Sidebar eras={eras} signedIn={headerUser !== null} />

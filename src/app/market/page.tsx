@@ -1,6 +1,10 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { CardsTable, type CardsTableRow } from "@/components/CardsTable";
+import { CardStateProvider } from "@/components/market/CardStateProvider";
+import { MarketSearch } from "@/components/market/MarketSearch";
+import { RowActions } from "@/components/market/RowActions";
+import { getUser } from "@/lib/supabase/server";
 import { eraSummaries } from "@/lib/queries";
 import { marketScreener, sparkKey, sparklinesFor } from "@/lib/queries-market";
 import {
@@ -35,9 +39,12 @@ export default async function MarketPage({ searchParams }: Props) {
   }));
   const eras = eraSummaries();
   const pageCount = Math.max(1, Math.ceil(total / SCREENER_PAGE_SIZE));
+  const signedIn = (await getUser()) !== null;
 
   const href = (patch: Partial<ScreenerParams>) =>
     `/market${screenerQuery({ ...p, page: 1, ...patch })}`;
+  // current state minus q/page — the search box owns those
+  const baseQuery = screenerQuery({ ...p, q: "", page: 1 }).replace(/^\?/, "");
 
   return (
     <div className="space-y-5">
@@ -130,12 +137,33 @@ export default async function MarketPage({ searchParams }: Props) {
         </span>
       </div>
 
+      <MarketSearch initialQuery={p.q} baseQuery={baseQuery} />
+
       {tableRows.length === 0 ? (
         <p className="rounded-xl border border-line bg-surface p-6 text-mut">
-          No cards match these filters — try lowering the minimum price.
+          {p.q
+            ? `No cards match “${p.q}” with these filters — try a different name or card number.`
+            : "No cards match these filters — try lowering the minimum price."}
         </p>
       ) : (
-        <CardsTable rows={tableRows} showSet />
+        <CardStateProvider productIds={tableRows.map((r) => r.productId)} signedIn={signedIn}>
+          <CardsTable
+            rows={tableRows}
+            showSet
+            trailingHeader="Track"
+            trailing={Object.fromEntries(
+              tableRows.map((r) => [
+                sparkKey(r.productId, r.subType),
+                <RowActions
+                  key={r.productId}
+                  productId={r.productId}
+                  subType={r.subType}
+                  name={r.name}
+                />,
+              ]),
+            )}
+          />
+        </CardStateProvider>
       )}
 
       {pageCount > 1 ? (

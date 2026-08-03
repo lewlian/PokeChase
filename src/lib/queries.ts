@@ -1,7 +1,7 @@
 import "server-only";
-import { sql, eq, asc } from "drizzle-orm";
+import { sql, eq, asc, type SQL } from "drizzle-orm";
 import { getDb, tables } from "@/db";
-import { parseSearchQuery } from "@/lib/search-query";
+import { cardMatchWhere, hasLooseNumberFallback } from "@/lib/card-filter";
 import type { ChaseTier, SealedType } from "@/db/schema";
 
 /* ------------------------------- meta ---------------------------------- */
@@ -502,25 +502,11 @@ export function searchAll(q: string) {
   const like = `%${clean(q)}%`;
 
   // Card-number queries ("113/165", "chansey 113", "tg12/tg30") filter on the
-  // printed number; everything else stays a plain name search.
-  const numberedWhere = (parsed: ReturnType<typeof parseSearchQuery>) => {
-    const numerator = clean(parsed.numerator!);
-    // Letter-prefixed numbers (TG12, GG05) match by prefix only — their
-    // numeric part would collide with ordinary card numbers.
-    const numberCond = /[a-z]/i.test(numerator)
-      ? sql`c.number like ${numerator + "%"}`
-      : sql`(c.sort_number = ${parsed.numeratorValue} or c.number like ${numerator + "/%"})`;
-    const withDenom = parsed.denominator
-      ? sql`${numberCond} and c.number like ${"%/" + clean(parsed.denominator)}`
-      : numberCond;
-    return parsed.name
-      ? sql`c.name like ${`%${clean(parsed.name)}%`} and ${withDenom}`
-      : withDenom;
-  };
-  const parsed = parseSearchQuery(q);
-  const cardsWhere = parsed.numerator ? numberedWhere(parsed) : sql`c.name like ${like}`;
+  // printed number; everything else stays a plain name search. Shared with
+  // the market screener via cardMatchWhere.
+  const cardsWhere = cardMatchWhere(q) ?? sql`c.name like ${like}`;
 
-  const cardSearch = (where: ReturnType<typeof sql>) =>
+  const cardSearch = (where: SQL) =>
     db.all<CardListRow & { setName: string; setSlug: string; language: string }>(sql`
       select c.product_id as productId, c.name, c.number, c.sort_number as sortNumber,
              c.rarity, c.image_url as imageUrl, s.name as setName, s.slug as setSlug, s.language,
@@ -537,9 +523,9 @@ export function searchAll(q: string) {
   // Unmarked trailing tokens like "tg12" parse as names (protecting real
   // names like Porygon2). When the name search comes up empty, re-parse
   // loosely and retry as a number query ("charizard tg12", bare "tg12").
-  if (cards.length === 0 && !parsed.numerator) {
-    const loose = parseSearchQuery(q, true);
-    if (loose.numerator) cards = cardSearch(numberedWhere(loose));
+  if (cards.length === 0 && hasLooseNumberFallback(q)) {
+    const loose = cardMatchWhere(q, true);
+    if (loose) cards = cardSearch(loose);
   }
   const sets = db.all<SetRow>(sql`
     select group_id as groupId, era_id as eraId, name, slug, release_date as releaseDate,

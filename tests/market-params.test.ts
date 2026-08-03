@@ -14,7 +14,14 @@ describe("parseScreenerParams", () => {
       minPrice: 1,
       eraId: null,
       language: null,
+      q: "",
     });
+  });
+
+  it("trims and caps the free-text filter (U23)", () => {
+    expect(parseScreenerParams({ q: "  charizard  " }).q).toBe("charizard");
+    expect(parseScreenerParams({ q: "x".repeat(200) }).q).toHaveLength(60);
+    expect(parseScreenerParams({ q: "113/165" }).q).toBe("113/165");
   });
 
   it("accepts each whitelisted sort key (U15)", () => {
@@ -52,6 +59,11 @@ describe("parseScreenerParams", () => {
 });
 
 describe("screenerQuery", () => {
+  it("carries the text filter and drops it when empty", () => {
+    expect(screenerQuery({ q: "charizard" })).toBe("?q=charizard");
+    expect(screenerQuery({ q: "" })).toBe("");
+  });
+
   it("omits defaults and round-trips through parse", () => {
     expect(screenerQuery({ sort: "price", page: 1, minPrice: 1 })).toBe("");
     const q = screenerQuery({ sort: "d7", dir: "asc", page: 3, minPrice: 20, language: "jp" });
