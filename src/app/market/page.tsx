@@ -2,18 +2,18 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { CardsTable, type CardsTableRow } from "@/components/CardsTable";
 import { CardStateProvider } from "@/components/market/CardStateProvider";
+import { EraFilter } from "@/components/market/EraFilter";
 import { MarketSearch } from "@/components/market/MarketSearch";
 import { RowActions } from "@/components/market/RowActions";
 import { getUser } from "@/lib/supabase/server";
 import { eraSummaries } from "@/lib/queries";
 import { marketScreener, sparkKey, sparklinesFor } from "@/lib/queries-market";
 import {
-  MIN_PRICE_CHOICES,
   SCREENER_PAGE_SIZE,
+  SCREENER_SORTS,
   parseScreenerParams,
   screenerQuery,
   type ScreenerParams,
-  type ScreenerSort,
 } from "@/lib/market-params";
 
 export const metadata: Metadata = { title: "Market — all cards, prices & trends" };
@@ -21,13 +21,6 @@ export const metadata: Metadata = { title: "Market — all cards, prices & trend
 interface Props {
   searchParams: Promise<Record<string, string | undefined>>;
 }
-
-const COLUMNS: Array<[ScreenerSort, string]> = [
-  ["name", "Name"],
-  ["price", "Price"],
-  ["d7", "7d %"],
-  ["d30", "30d %"],
-];
 
 export default async function MarketPage({ searchParams }: Props) {
   const p = parseScreenerParams(await searchParams);
@@ -45,6 +38,25 @@ export default async function MarketPage({ searchParams }: Props) {
     `/market${screenerQuery({ ...p, page: 1, ...patch })}`;
   // current state minus q/page — the search box owns those
   const baseQuery = screenerQuery({ ...p, q: "", page: 1 }).replace(/^\?/, "");
+  // …and minus era, which the era dropdown owns
+  const eraBaseQuery = screenerQuery({ ...p, eraIds: [], page: 1 }).replace(/^\?/, "");
+  // Column-header sort links: clicking the active column flips direction
+  const sortHrefs = Object.fromEntries(
+    SCREENER_SORTS.map((key) => [
+      key,
+      href({
+        sort: key,
+        dir:
+          p.sort === key
+            ? p.dir === "desc"
+              ? "asc"
+              : "desc"
+            : key === "name"
+              ? "asc"
+              : "desc",
+      }),
+    ]),
+  );
 
   return (
     <div className="space-y-5">
@@ -56,18 +68,13 @@ export default async function MarketPage({ searchParams }: Props) {
       </header>
 
       <div className="flex flex-wrap items-center gap-2 text-sm">
-        <span className="text-mut">Min price:</span>
-        {MIN_PRICE_CHOICES.map((m) => (
-          <Link
-            key={m}
-            href={href({ minPrice: m })}
-            className={`rounded-full px-3 py-1 font-medium ${
-              p.minPrice === m ? "bg-pokeblue text-white" : "bg-surface2 text-mut hover:text-ink"
-            }`}
-          >
-            ${m}+
-          </Link>
-        ))}
+        {eras.length > 0 ? (
+          <EraFilter
+            eras={eras.map((e) => ({ id: e.id, name: e.name, accent: e.accent }))}
+            selected={p.eraIds}
+            baseQuery={eraBaseQuery}
+          />
+        ) : null}
         <span className="ml-2 text-mut">Language:</span>
         {(
           [
@@ -86,52 +93,6 @@ export default async function MarketPage({ searchParams }: Props) {
             {label}
           </Link>
         ))}
-      </div>
-
-      {eras.length > 0 ? (
-        <div className="flex flex-wrap items-center gap-2 text-sm">
-          <span className="text-mut">Era:</span>
-          <Link
-            href={href({ eraId: null })}
-            className={`rounded-full px-3 py-1 font-medium ${
-              p.eraId === null ? "bg-pokeblue text-white" : "bg-surface2 text-mut hover:text-ink"
-            }`}
-          >
-            All
-          </Link>
-          {eras.map((e) => (
-            <Link
-              key={e.id}
-              href={href({ eraId: e.id })}
-              className={`flex items-center gap-1.5 rounded-full px-3 py-1 font-medium ${
-                p.eraId === e.id ? "bg-pokeblue text-white" : "bg-surface2 text-mut hover:text-ink"
-              }`}
-            >
-              <span className="h-2 w-2 rounded-full" style={{ background: e.accent }} />
-              {e.name}
-            </Link>
-          ))}
-        </div>
-      ) : null}
-
-      <div className="flex flex-wrap items-center gap-2 text-sm">
-        <span className="text-mut">Sort:</span>
-        {COLUMNS.map(([key, label]) => {
-          const active = p.sort === key;
-          const nextDir = active && p.dir === "desc" ? "asc" : active ? "desc" : undefined;
-          return (
-            <Link
-              key={key}
-              href={href({ sort: key, dir: nextDir ?? (key === "name" ? "asc" : "desc") })}
-              className={`rounded-full px-3 py-1 font-medium ${
-                active ? "bg-pokeblue text-white" : "bg-surface2 text-mut hover:text-ink"
-              }`}
-            >
-              {label}
-              {active ? (p.dir === "desc" ? " ↓" : " ↑") : ""}
-            </Link>
-          );
-        })}
         <span className="ml-auto tabular-nums text-mut">
           {total.toLocaleString("en-US")} cards
         </span>
@@ -143,7 +104,7 @@ export default async function MarketPage({ searchParams }: Props) {
         <p className="rounded-xl border border-line bg-surface p-6 text-mut">
           {p.q
             ? `No cards match “${p.q}” with these filters — try a different name or card number.`
-            : "No cards match these filters — try lowering the minimum price."}
+            : "No cards match these filters."}
         </p>
       ) : (
         <CardStateProvider productIds={tableRows.map((r) => r.productId)} signedIn={signedIn}>
@@ -151,6 +112,7 @@ export default async function MarketPage({ searchParams }: Props) {
             rows={tableRows}
             showSet
             trailingHeader="Track"
+            headerSort={{ sort: p.sort, dir: p.dir, hrefs: sortHrefs }}
             trailing={Object.fromEntries(
               tableRows.map((r) => [
                 sparkKey(r.productId, r.subType),

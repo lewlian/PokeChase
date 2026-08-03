@@ -35,7 +35,21 @@ interface Props {
    * subtree silently fails to hydrate if one does.
    */
   trailing?: Record<string, ReactNode>;
+  /**
+   * Makes column headers sortable links. hrefs maps a sort key
+   * (name/price/d7/d30) to the URL that toggles it; keys absent from the map
+   * render as plain headers. Precomputed strings, not a callback — same
+   * serialization constraint as `trailing`.
+   */
+  headerSort?: { sort: string; dir: "asc" | "desc"; hrefs: Record<string, string> };
 }
+
+const HEADER_COLUMNS: Array<{ key: string; label: string; align: "left" | "right" }> = [
+  { key: "name", label: "Card", align: "left" },
+  { key: "price", label: "Price", align: "right" },
+  { key: "d7", label: "7d", align: "right" },
+  { key: "d30", label: "30d", align: "right" },
+];
 
 /** Compact stock-market-style card table — shared by the set table view,
  *  /market screener, watchlists, and the portfolio holdings list. */
@@ -45,19 +59,35 @@ export function CardsTable({
   trailingHeader,
   renderTrailing,
   trailing,
+  headerSort,
 }: Props) {
   const hasTrailing = Boolean(renderTrailing || trailing);
   const trailingFor = (r: CardsTableRow): ReactNode =>
     trailing ? trailing[`${r.productId}|${r.subType ?? ""}`] : renderTrailing?.(r);
+  const headerCell = ({ key, label, align }: (typeof HEADER_COLUMNS)[number]) => {
+    const href = headerSort?.hrefs[key];
+    const active = headerSort?.sort === key;
+    const cls =
+      align === "right" ? "px-3 py-3 text-right font-semibold" : "px-4 py-3 text-left font-semibold";
+    if (!href) return <th key={key} className={cls}>{label}</th>;
+    return (
+      <th key={key} className={cls} aria-sort={active ? (headerSort!.dir === "asc" ? "ascending" : "descending") : undefined}>
+        <Link
+          href={href}
+          className={`inline-flex items-center gap-1 hover:text-ink ${active ? "text-ink" : ""}`}
+        >
+          {label}
+          <span aria-hidden="true">{active ? (headerSort!.dir === "desc" ? "↓" : "↑") : "↕"}</span>
+        </Link>
+      </th>
+    );
+  };
   return (
     <div className="overflow-x-auto rounded-2xl border border-line bg-surface">
       <table className="w-full min-w-[36rem] text-sm">
         <thead>
           <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-mut">
-            <th className="px-4 py-3 font-semibold">Card</th>
-            <th className="px-3 py-3 text-right font-semibold">Price</th>
-            <th className="px-3 py-3 text-right font-semibold">7d</th>
-            <th className="px-3 py-3 text-right font-semibold">30d</th>
+            {HEADER_COLUMNS.map(headerCell)}
             <th className="px-3 py-3 text-right font-semibold">Trend</th>
             {hasTrailing ? <th className="px-3 py-3 text-right font-semibold">{trailingHeader}</th> : null}
           </tr>

@@ -116,8 +116,11 @@ export function marketScreener(p: ScreenerParams): { rows: ScreenerRow[]; total:
   const anchors = marketAnchors();
   if (!anchors) return { rows: [], total: 0 };
   const db = getDb();
-  const filters = [sql`b.cur >= ${p.minPrice}`];
-  if (p.eraId) filters.push(sql`s.era_id = ${p.eraId}`);
+  // Base condition keeps the joined WHERE valid when no filter is active.
+  const filters: SQL[] = [sql`b.cur is not null`];
+  if (p.eraIds.length > 0) {
+    filters.push(sql`s.era_id in (${sql.join(p.eraIds.map((e) => sql`${e}`), sql`, `)})`);
+  }
   if (p.language) filters.push(sql`s.language = ${p.language}`);
   if (p.q) {
     // Name or card number, same grammar as site search. Unmarked tokens like

@@ -83,9 +83,9 @@ async function main() {
     { path: "/api/v1/search?q=x", mustContain: ["at least 2"], status: 400 },
     { path: "/api/v1/history/not-a-number", mustContain: ["invalid"], status: 400 },
     // market views
-    { path: "/market", mustContain: ["Market", "Min price", "cards", "7d %"] },
-    { path: "/market?sort=d7&min=20", mustContain: ["Market", "cards"] },
-    { path: "/market?min=100&lang=jp", mustContain: ["Market"] },
+    { path: "/market", mustContain: ["Market", "Era", "Filter by name or card number", "Trend"] },
+    { path: "/market?sort=d7", mustContain: ["Market", "cards"] },
+    { path: "/market?era=sword-shield,scarlet-violet&lang=en", mustContain: ["Market", "2 eras"] },
     {
       path: `/sets/${sets[0].slug}?tab=cards&view=table`,
       mustContain: ["View:", "Table", "7d %", "30d %", "Trend"],

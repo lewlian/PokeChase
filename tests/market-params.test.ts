@@ -11,8 +11,7 @@ describe("parseScreenerParams", () => {
       sort: "price",
       dir: "desc",
       page: 1,
-      minPrice: 1,
-      eraId: null,
+      eraIds: [],
       language: null,
       q: "",
     });
@@ -40,19 +39,18 @@ describe("parseScreenerParams", () => {
     expect(parseScreenerParams({ sort: "name" }).dir).toBe("asc");
   });
 
-  it("clamps page and minPrice (U18)", () => {
+  it("clamps page (U18)", () => {
     expect(parseScreenerParams({ page: "0" }).page).toBe(1);
     expect(parseScreenerParams({ page: "-3" }).page).toBe(1);
     expect(parseScreenerParams({ page: "2.5" }).page).toBe(1);
     expect(parseScreenerParams({ page: "12" }).page).toBe(12);
-    expect(parseScreenerParams({ min: "-5" }).minPrice).toBe(1);
-    expect(parseScreenerParams({ min: "abc" }).minPrice).toBe(1);
-    expect(parseScreenerParams({ min: "20" }).minPrice).toBe(20);
   });
 
-  it("rejects injection-shaped era ids and unknown languages (U19)", () => {
-    expect(parseScreenerParams({ era: "x'; drop table sets;--" }).eraId).toBeNull();
-    expect(parseScreenerParams({ era: "scarlet-violet" }).eraId).toBe("scarlet-violet");
+  it("parses era multi-select, dropping injection-shaped ids (U19)", () => {
+    expect(parseScreenerParams({ era: "x'; drop table sets;--" }).eraIds).toEqual([]);
+    expect(parseScreenerParams({ era: "scarlet-violet" }).eraIds).toEqual(["scarlet-violet"]);
+    expect(parseScreenerParams({ era: "neo,ex,neo" }).eraIds).toEqual(["neo", "ex"]); // dedupes
+    expect(parseScreenerParams({ era: "neo,bad id!,ex" }).eraIds).toEqual(["neo", "ex"]);
     expect(parseScreenerParams({ lang: "fr" }).language).toBeNull();
     expect(parseScreenerParams({ lang: "jp" }).language).toBe("jp");
   });
@@ -65,13 +63,19 @@ describe("screenerQuery", () => {
   });
 
   it("omits defaults and round-trips through parse", () => {
-    expect(screenerQuery({ sort: "price", page: 1, minPrice: 1 })).toBe("");
-    const q = screenerQuery({ sort: "d7", dir: "asc", page: 3, minPrice: 20, language: "jp" });
+    expect(screenerQuery({ sort: "price", page: 1, eraIds: [] })).toBe("");
+    const q = screenerQuery({
+      sort: "d7",
+      dir: "asc",
+      page: 3,
+      eraIds: ["neo", "ex"],
+      language: "jp",
+    });
     const parsed = parseScreenerParams(Object.fromEntries(new URLSearchParams(q.slice(1))));
     expect(parsed.sort).toBe("d7");
     expect(parsed.dir).toBe("asc");
     expect(parsed.page).toBe(3);
-    expect(parsed.minPrice).toBe(20);
+    expect(parsed.eraIds).toEqual(["neo", "ex"]);
     expect(parsed.language).toBe("jp");
   });
 });

@@ -28,6 +28,8 @@ interface Ctx {
   stateFor: (productId: number) => CardState;
   toggleWatch: (listId: string, productId: number, subType: string) => Promise<void>;
   setQuantity: (productId: number, subType: string, quantity: number) => Promise<void>;
+  /** Creates a watchlist; resolves to an error message or null on success. */
+  createWatchlist: (name: string) => Promise<string | null>;
   requestSignIn: () => void;
 }
 
@@ -109,6 +111,19 @@ export function CardStateProvider({
           body: JSON.stringify({ productId, subType, quantity }),
         });
         await load();
+      },
+      createWatchlist: async (name) => {
+        const res = await fetch("/api/v1/me/watchlists", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ name }),
+        });
+        if (!res.ok) {
+          const json = await res.json().catch(() => ({}));
+          return json.error ?? "Couldn't create the watchlist";
+        }
+        await load();
+        return null;
       },
       requestSignIn: () => {
         window.dispatchEvent(

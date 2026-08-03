@@ -99,24 +99,20 @@ const base = {
   sort: "price",
   dir: "desc",
   page: 1,
-  minPrice: 1,
-  eraId: null,
+  eraIds: [] as string[],
   language: null,
   q: "",
 } as const;
 
 describe("marketScreener", () => {
-  it("filters by minimum price (D4)", () => {
-    const { rows, total } = qm.marketScreener({ ...base, minPrice: 20 });
-    expect(total).toBe(2);
-    expect(rows.map((r) => r.productId).sort()).toEqual([1, 4]);
-  });
-
   it("sorts by price in both directions (D5)", () => {
-    const desc = qm.marketScreener({ ...base, minPrice: 20 });
-    expect(desc.rows.map((r) => r.productId)).toEqual([4, 1]);
-    const asc = qm.marketScreener({ ...base, minPrice: 20, dir: "asc" });
-    expect(asc.rows.map((r) => r.productId)).toEqual([1, 4]);
+    const desc = qm.marketScreener({ ...base, q: "a" }); // Alpha, Delta... narrow via names
+    expect(desc.rows[0].market! >= (desc.rows.at(-1)!.market ?? 0)).toBe(true);
+    const descTop = qm.marketScreener(base);
+    expect(descTop.rows[0].productId).toBe(4); // $100 first
+    expect(descTop.rows[1].productId).toBe(1); // $50 second
+    const asc = qm.marketScreener({ ...base, dir: "asc" });
+    expect(asc.rows[0].market).toBeLessThanOrEqual(asc.rows[1].market ?? Infinity);
   });
 
   it("sorts by 7d change with nulls last (D5)", () => {
@@ -161,15 +157,14 @@ describe("marketScreener", () => {
     expect(all.total).toBe(60);
     expect(all.rows).toHaveLength(50);
     expect(qm.marketScreener({ ...base, q: "bulk", page: 2 }).rows).toHaveLength(10);
-    // min price excludes them entirely
-    expect(qm.marketScreener({ ...base, q: "bulk", minPrice: 20 }).total).toBe(0);
     // era filter still applies
-    expect(qm.marketScreener({ ...base, q: "bulk", eraId: "era-b" }).total).toBe(0);
+    expect(qm.marketScreener({ ...base, q: "bulk", eraIds: ["era-b"] }).total).toBe(0);
   });
 
-  it("filters by era and language (D7, D8)", () => {
-    expect(qm.marketScreener({ ...base, eraId: "era-b" }).total).toBe(1);
-    expect(qm.marketScreener({ ...base, eraId: "era-a" }).total).toBe(62);
+  it("filters by era (multi-select) and language (D7, D8)", () => {
+    expect(qm.marketScreener({ ...base, eraIds: ["era-b"] }).total).toBe(1);
+    expect(qm.marketScreener({ ...base, eraIds: ["era-a"] }).total).toBe(62);
+    expect(qm.marketScreener({ ...base, eraIds: ["era-a", "era-b"] }).total).toBe(63);
     const jp = qm.marketScreener({ ...base, language: "jp" });
     expect(jp.total).toBe(1);
     expect(jp.rows[0].language).toBe("jp");

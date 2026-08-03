@@ -6,14 +6,14 @@ export type ScreenerSort = (typeof SCREENER_SORTS)[number];
 export type SortDir = "asc" | "desc";
 
 export const SCREENER_PAGE_SIZE = 50;
-export const MIN_PRICE_CHOICES = [1, 5, 20, 100] as const;
+export const MAX_ERA_FILTERS = 20;
 
 export interface ScreenerParams {
   sort: ScreenerSort;
   dir: SortDir;
   page: number;
-  minPrice: number;
-  eraId: string | null;
+  /** Selected era ids (checkbox multi-select). Empty = all eras. */
+  eraIds: string[];
   language: "en" | "jp" | null;
   /** Free-text filter (name or card number). Empty string = no filter. */
   q: string;
@@ -31,13 +31,12 @@ export function parseScreenerParams(sp: Record<string, string | undefined>): Scr
     sp.dir === "asc" || sp.dir === "desc" ? sp.dir : sort === "name" ? "asc" : "desc";
   const rawPage = Number(sp.page);
   const page = Number.isInteger(rawPage) && rawPage >= 1 ? Math.min(rawPage, 9999) : 1;
-  const rawMin = Number(sp.min);
-  const minPrice =
-    Number.isFinite(rawMin) && rawMin >= 0 ? Math.min(rawMin, 1_000_000) : 1;
-  const eraId = sp.era && ERA_ID_RE.test(sp.era) ? sp.era : null;
+  const eraIds = [
+    ...new Set((sp.era ?? "").split(",").filter((e) => ERA_ID_RE.test(e))),
+  ].slice(0, MAX_ERA_FILTERS);
   const language = sp.lang === "en" || sp.lang === "jp" ? sp.lang : null;
   const q = (sp.q ?? "").trim().slice(0, MAX_QUERY_LEN);
-  return { sort, dir, page, minPrice, eraId, language, q };
+  return { sort, dir, page, eraIds, language, q };
 }
 
 /** Query string for a screener state, omitting defaults to keep URLs clean. */
@@ -46,8 +45,7 @@ export function screenerQuery(p: Partial<ScreenerParams>): string {
   if (p.sort && p.sort !== "price") q.set("sort", p.sort);
   if (p.dir && p.dir !== (p.sort === "name" ? "asc" : "desc")) q.set("dir", p.dir);
   if (p.page && p.page > 1) q.set("page", String(p.page));
-  if (p.minPrice !== undefined && p.minPrice !== 1) q.set("min", String(p.minPrice));
-  if (p.eraId) q.set("era", p.eraId);
+  if (p.eraIds && p.eraIds.length > 0) q.set("era", p.eraIds.join(","));
   if (p.language) q.set("lang", p.language);
   if (p.q) q.set("q", p.q);
   const s = q.toString();
