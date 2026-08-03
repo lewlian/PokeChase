@@ -3,7 +3,7 @@ import { Fredoka, Inter } from "next/font/google";
 import { AuthModal } from "@/components/AuthModal";
 import { Sidebar } from "@/components/Sidebar";
 import { SiteHeader } from "@/components/SiteHeader";
-import { eraSummaries } from "@/lib/queries";
+import { eraSummaries, setsNavTree } from "@/lib/queries";
 import { getUser } from "@/lib/supabase/server";
 import "./globals.css";
 
@@ -32,6 +32,7 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const eras = eraSummaries();
+  const setsNav = setsNavTree();
   const user = await getUser();
   const headerUser = user?.email
     ? {
@@ -46,7 +47,7 @@ export default async function RootLayout({
         {headerUser ? null : <AuthModal />}
 
         <div className="mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 py-8">
-          <Sidebar eras={eras} signedIn={headerUser !== null} />
+          <Sidebar eras={eras} setsNav={setsNav} signedIn={headerUser !== null} />
           <main className="min-w-0 flex-1">{children}</main>
         </div>
 

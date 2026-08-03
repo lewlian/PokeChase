@@ -12,9 +12,11 @@ import { MAX_QUERY_LEN } from "@/lib/market-params";
 export function MarketSearch({
   initialQuery,
   baseQuery,
+  placeholder = "Filter by name or card number — e.g. Charizard, 113/165",
 }: {
   initialQuery: string;
   baseQuery: string;
+  placeholder?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -52,7 +54,7 @@ export function MarketSearch({
         value={value}
         maxLength={MAX_QUERY_LEN}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Filter by name or card number — e.g. Charizard, 113/165"
+        placeholder={placeholder}
         aria-label="Filter cards"
         className="w-full rounded-full border border-line bg-surface px-4 py-2 text-base outline-none focus:border-pokeblue sm:text-sm"
       />

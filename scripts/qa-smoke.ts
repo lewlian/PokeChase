@@ -36,13 +36,13 @@ async function main() {
     { path: "/sets", mustContain: ["Every set, every era", "Original Series", "Base Set"] },
     ...sets.map((s) => ({
       path: `/sets/${s.slug}`,
-      mustContain: ["Chase Cards", "All Cards", "Sealed Products"],
+      mustContain: ["Sealed Products", "Full set market value", "Most expensive card", "Rarity"],
     })),
     ...sets.map((s) => ({
       path: `/sets/${s.slug}?tab=sealed`,
       mustContain: ["Sealed Products"],
     })),
-    { path: `/sets/${sets[0].slug}?tab=cards&sort=price`, mustContain: ["Sort:", "cards"] },
+    { path: `/sets/${sets[0].slug}?sort=number`, mustContain: ["Number", "cards"] },
     {
       path: `/cards/${card.id}`,
       mustContain: [
@@ -87,8 +87,8 @@ async function main() {
     { path: "/market?sort=d7", mustContain: ["Market", "cards"] },
     { path: "/market?era=sword-shield,scarlet-violet&lang=en", mustContain: ["Market", "2 eras"] },
     {
-      path: `/sets/${sets[0].slug}?tab=cards&view=table`,
-      mustContain: ["View:", "Table", "7d %", "30d %", "Trend"],
+      path: `/sets/${sets[0].slug}?view=table`,
+      mustContain: ["Table", "7d %", "30d %", "Trend"],
     },
     // auth surfaces (signed out / unconfigured)
     { path: "/login", mustContain: ["Sign in"] },

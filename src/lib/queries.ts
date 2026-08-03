@@ -68,6 +68,35 @@ export function eraSummaries() {
   }
 }
 
+export interface SetsNavEra {
+  id: string;
+  name: string;
+  accent: string;
+  sets: Array<{ slug: string; name: string }>;
+}
+
+/** Sidebar navigation tree: language → era → sets (newest first). Renders in
+ *  the root layout, so it must tolerate a missing/unmigrated DB. */
+export function setsNavTree(): { en: SetsNavEra[]; jp: SetsNavEra[] } {
+  try {
+    const eras = erasWithSets();
+    const forLang = (lang: string): SetsNavEra[] =>
+      eras
+        .map((e) => ({
+          id: e.id,
+          name: e.name,
+          accent: e.accent,
+          sets: e.sets
+            .filter((s) => s.language === lang)
+            .map((s) => ({ slug: s.slug, name: s.name })),
+        }))
+        .filter((e) => e.sets.length > 0);
+    return { en: forLang("en"), jp: forLang("jp") };
+  } catch {
+    return { en: [], jp: [] };
+  }
+}
+
 export function erasWithSets() {
   const db = getDb();
   const eras = db.select().from(tables.eras).orderBy(asc(tables.eras.sortOrder)).all();

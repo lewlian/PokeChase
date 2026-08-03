@@ -83,6 +83,14 @@ export const GUIDES: Guide[] = [
         visual: "jp-vs-en-rarities",
       },
       {
+        h: "Sorting your cards when you're starting out",
+        ps: [
+          "First pass — pull the hits. Go through everything once and separate anything with a foil frame, a gold star count, a letter code above R, or a number bigger than the set size. Those go straight into penny sleeves. Everything left is bulk, and bulk gets sorted by set, not by Pokémon: match the set symbol (bottom corner, next to the rarity mark), then order each set by collector number. Set-plus-number is the order every checklist, binder page, and this site's set pages use, so finding or listing a card later takes seconds instead of a shoebox dig.",
+          "Second pass — organize the sleeved pile by what it's worth, not what it is. A practical ladder: $1–5 cards into a sorted 'trade binder', $5–50 into sleeves + toploaders in a lidded box, $50+ into one-touch magnetics or a grading pile. Resist sorting bulk by Pokémon name unless you're a character collector — alphabetical sorting is enormous effort that no marketplace or checklist shares. If you do collect a character, keep one separate binder for that lane and leave the rest in set order.",
+          "Use the site as your checklist: each set page lists every card in collector-number order (sort by Number), and the rarity column tells you which pile a card belongs in. Signed in, the star on any row files a card into your portfolio with a quantity — sort the cardboard once, and let the portfolio do the remembering.",
+        ],
+      },
+      {
         h: "Cheat sheet",
         ps: [
           "Circle = Common, diamond = Uncommon, star = Rare — every English era. Number bigger than the set size = secret rare — every era, both languages. Gold star count (SV/Mega era): one = IR, two = SIR, three = gold Hyper. JP letter codes: RR = ex, SR = full art, UR = gold, AR = artwork card, SAR = special artwork card. Vintage value lives in the stamp: 1st Edition > Shadowless > Unlimited. When in doubt, open the card on PokéChase — the rarity is printed on every row, table, and card page.",

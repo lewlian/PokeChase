@@ -2,82 +2,110 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { CardTile } from "@/components/CardTile";
+import { CardsTable, type CardsTableRow } from "@/components/CardsTable";
+import { MarketSearch } from "@/components/market/MarketSearch";
 import { ProductTile } from "@/components/ProductTile";
 import { SetLogo } from "@/components/SetLogo";
 import { SEALED_TYPE_LABEL, SEALED_TYPE_ORDER, typicalPackCount } from "@/lib/classify";
 import { money, shortDate } from "@/lib/format";
-import {
-  cardsForSet,
-  chaseForSet,
-  sealedForSet,
-  setBySlug,
-} from "@/lib/queries";
+import { sealedForSet, setBySlug } from "@/lib/queries";
 import { cardsForSetWithChange, sparkKey, sparklinesFor } from "@/lib/queries-market";
-import { CardsTable, type CardsTableRow } from "@/components/CardsTable";
-import { SET_TABLE_SORTS, sortSetRows, type SetTableSort } from "@/lib/market-params";
+import {
+  filterCardRows,
+  parseSetPageParams,
+  sortCardRows,
+  type SetPageParams,
+  type SetSort,
+} from "@/lib/market-params";
+import { setCardStats } from "@/lib/set-stats";
 import type { SealedType } from "@/db/schema";
-
 
 interface Props {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ tab?: string; sort?: string; view?: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const set = setBySlug(slug);
-  return { title: set ? `${set.name} — chase cards & prices` : "Set not found" };
+  return { title: set ? `${set.name} — cards & prices` : "Set not found" };
 }
 
-const TABS = [
-  ["chase", "Chase Cards"],
-  ["cards", "All Cards"],
-  ["sealed", "Sealed Products"],
-] as const;
+/** Sort chips shown above the card list. 7d/30d only make sense where the
+ *  change columns are visible (table view). */
+const SORT_CHIPS: Array<{ key: SetSort; label: string; tableOnly?: boolean }> = [
+  { key: "number", label: "Number" },
+  { key: "name", label: "Name" },
+  { key: "rarity", label: "Rarity" },
+  { key: "price", label: "Price" },
+  { key: "d7", label: "7d %", tableOnly: true },
+  { key: "d30", label: "30d %", tableOnly: true },
+];
+
+function chipQuery(p: SetPageParams, patch: Partial<SetPageParams>): string {
+  const next = { ...p, ...patch };
+  const q = new URLSearchParams();
+  if (next.tab !== "cards") q.set("tab", next.tab);
+  if (next.sort !== "price") q.set("sort", next.sort);
+  const defaultDir = next.sort === "name" || next.sort === "number" ? "asc" : "desc";
+  if (next.dir !== defaultDir) q.set("dir", next.dir);
+  if (next.view !== "grid") q.set("view", next.view);
+  if (next.q) q.set("q", next.q);
+  const s = q.toString();
+  return s ? `?${s}` : "";
+}
 
 export default async function SetPage({ params, searchParams }: Props) {
   const { slug } = await params;
-  const sp = await searchParams;
+  const p = parseSetPageParams(await searchParams);
   const set = setBySlug(slug);
   if (!set) notFound();
 
-  const tab = (["chase", "cards", "sealed"].includes(sp.tab ?? "") ? sp.tab : "chase") as
-    | "chase"
-    | "cards"
-    | "sealed";
-  const view = sp.view === "table" ? "table" : "grid";
-  // d7/d30 sorts only exist in the table view, which has change columns
-  const validSorts = view === "table" ? SET_TABLE_SORTS : (["number", "price", "name"] as const);
-  const sort = ((validSorts as readonly string[]).includes(sp.sort ?? "")
-    ? sp.sort
-    : "number") as SetTableSort;
+  const allRows = cardsForSetWithChange(set.groupId);
+  const stats = setCardStats(allRows);
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-center gap-5 rounded-2xl border border-line bg-surface p-6">
-        <SetLogo
-          logoUrl={set.logoUrl}
-          name={set.name}
-          accent={set.era?.accent}
-          className="h-16"
-        />
-        <div>
-          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: set.era?.accent }}>
-            {set.era?.name}
-          </p>
-          <h1 className="flex items-center gap-2 font-display text-2xl font-bold sm:text-3xl">
-            {set.name}
-            {set.language === "jp" ? (
-              <span className="rounded bg-pokered px-1.5 py-0.5 text-xs font-bold uppercase text-white">
-                Japanese
+      <header className="rounded-2xl border border-line bg-surface p-6">
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
+          <SetLogo logoUrl={set.logoUrl} name={set.name} accent={set.era?.accent} className="h-14" />
+          <Stat label="Set name">
+            <span className="flex items-center gap-2">
+              {set.name}
+              {set.language === "jp" ? (
+                <span className="rounded bg-pokered px-1.5 py-0.5 text-xs font-bold uppercase text-white">
+                  JP
+                </span>
+              ) : null}
+            </span>
+          </Stat>
+          <Stat label="Series">
+            <Link
+              href={`/sets#${set.eraId}`}
+              className="hover:underline"
+              style={{ color: set.era?.accent }}
+            >
+              {set.era?.name}
+            </Link>
+          </Stat>
+          <Stat label="Release date">{shortDate(set.releaseDate)}</Stat>
+          <Stat label="Cards">
+            {stats.secretCount > 0
+              ? `${stats.baseCount} + ${stats.secretCount} Secret`
+              : String(stats.total)}
+          </Stat>
+          {stats.topCard ? (
+            <Stat label="Most expensive card">
+              <span className="block max-w-56 truncate" title={stats.topCard.name}>
+                {stats.topCard.name}
               </span>
-            ) : null}
-          </h1>
-          <p className="text-sm text-mut">
-            Released {shortDate(set.releaseDate)}
-            {set.cardCount ? ` · ${set.cardCount} cards` : ""}
-            {set.abbreviation ? ` · ${set.abbreviation}` : ""}
-          </p>
+            </Stat>
+          ) : null}
+          {stats.totalValue > 0 ? (
+            <Stat label="Full set market value">
+              <span className="tabular-nums text-gain">{money(stats.totalValue)}</span>
+            </Stat>
+          ) : null}
         </div>
       </header>
 
@@ -85,12 +113,17 @@ export default async function SetPage({ params, searchParams }: Props) {
         className="flex gap-1 overflow-x-auto border-b border-line [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         aria-label="Set sections"
       >
-        {TABS.map(([key, label]) => (
+        {(
+          [
+            ["cards", "Cards"],
+            ["sealed", "Sealed Products"],
+          ] as const
+        ).map(([key, label]) => (
           <Link
             key={key}
-            href={`/sets/${slug}?tab=${key}`}
+            href={`/sets/${slug}${key === "cards" ? "" : "?tab=sealed"}`}
             className={`whitespace-nowrap rounded-t-lg px-3 py-2 text-sm font-semibold sm:px-4 ${
-              tab === key
+              p.tab === key
                 ? "border border-b-0 border-line bg-surface text-ink"
                 : "text-mut hover:text-ink"
             }`}
@@ -100,76 +133,64 @@ export default async function SetPage({ params, searchParams }: Props) {
         ))}
       </nav>
 
-      {tab === "chase" ? <ChaseTab groupId={set.groupId} /> : null}
-      {tab === "cards" ? (
-        <CardsTab groupId={set.groupId} slug={slug} sort={sort} view={view} />
-      ) : null}
-      {tab === "sealed" ? <SealedTab groupId={set.groupId} /> : null}
+      {p.tab === "cards" ? (
+        <CardsSection slug={slug} p={p} allRows={allRows} />
+      ) : (
+        <SealedTab groupId={set.groupId} />
+      )}
     </div>
   );
 }
 
-function ChaseTab({ groupId }: { groupId: number }) {
-  const rows = chaseForSet(groupId);
-  if (rows.length === 0) {
-    return (
-      <p className="rounded-xl border border-line bg-surface p-6 text-mut">
-        No chase data yet for this set — either prices haven&apos;t been ingested or no
-        card clears the $15 notable floor.
-      </p>
-    );
-  }
+function Stat({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <>
-      <p className="text-sm text-mut">
-        Ranked by current market value.{" "}
-        <Link href="/learn/glossary" className="text-pokeblue hover:underline">
-          What do Grail / Chase / Notable mean?
-        </Link>
-      </p>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-        {rows.map((c) => (
-          <CardTile key={c.productId} {...c} />
-        ))}
-      </div>
-    </>
+    <div>
+      <p className="text-[10px] font-bold uppercase tracking-widest text-mut">{label}</p>
+      <p className="mt-0.5 text-sm font-semibold">{children}</p>
+    </div>
   );
 }
 
-function CardsTab({
-  groupId,
+function CardsSection({
   slug,
-  sort,
-  view,
+  p,
+  allRows,
 }: {
-  groupId: number;
   slug: string;
-  sort: SetTableSort;
-  view: "grid" | "table";
+  p: SetPageParams;
+  allRows: ReturnType<typeof cardsForSetWithChange>;
 }) {
-  const sortChoices =
-    view === "table"
-      ? ([
-          ["number", "Card number"],
-          ["price", "Price"],
-          ["name", "Name"],
-          ["d7", "7d %"],
-          ["d30", "30d %"],
-        ] as const)
-      : ([
-          ["number", "Card number"],
-          ["price", "Price"],
-          ["name", "Name"],
-        ] as const);
-  const viewParam = view === "table" ? "&view=table" : "";
-  const gridRows =
-    view === "grid" ? cardsForSet(groupId, sort as "number" | "price" | "name") : null;
-  const tableRows = view === "table" ? sortSetRows(cardsForSetWithChange(groupId), sort) : null;
-  const count = (gridRows ?? tableRows ?? []).length;
+  const rows = sortCardRows(filterCardRows(allRows, p.q), p.sort, p.dir);
+  const baseQuery = chipQuery({ ...p, q: "" }, {}).replace(/^\?/, "");
+
   return (
     <>
       <div className="flex flex-wrap items-center gap-2 text-sm">
-        <span className="text-mut">View:</span>
+        <div className="min-w-56 flex-1 sm:max-w-xs">
+          <MarketSearch initialQuery={p.q} baseQuery={baseQuery} placeholder="Name or Number…" />
+        </div>
+        {SORT_CHIPS.filter((c) => !c.tableOnly || p.view === "table").map(({ key, label }) => {
+          const active = p.sort === key;
+          const defaultDir = key === "name" || key === "number" ? "asc" : "desc";
+          const nextDir = active ? (p.dir === "desc" ? "asc" : "desc") : defaultDir;
+          return (
+            <Link
+              key={key}
+              href={`/sets/${slug}${chipQuery(p, { sort: key, dir: nextDir })}`}
+              className={`flex items-center gap-1 rounded-full px-3 py-1 font-semibold ${
+                active
+                  ? "bg-pokeyellow text-[#1c2033]"
+                  : "bg-surface2 text-mut hover:text-ink"
+              }`}
+            >
+              {label}
+              <span aria-hidden="true" className="text-xs">
+                {active ? (p.dir === "desc" ? "▾" : "▴") : "▴▾"}
+              </span>
+            </Link>
+          );
+        })}
+        <span className="mx-1 text-mut">·</span>
         {(
           [
             ["grid", "Grid"],
@@ -178,34 +199,27 @@ function CardsTab({
         ).map(([key, label]) => (
           <Link
             key={key}
-            href={`/sets/${slug}?tab=cards&sort=${["d7", "d30"].includes(sort) && key === "grid" ? "price" : sort}${key === "table" ? "&view=table" : ""}`}
+            href={`/sets/${slug}${chipQuery(p, { view: key, sort: ["d7", "d30"].includes(p.sort) && key === "grid" ? "price" : p.sort })}`}
             className={`rounded-full px-3 py-1 font-medium ${
-              view === key ? "bg-pokeyellow text-[#1c2033]" : "bg-surface2 text-mut hover:text-ink"
+              p.view === key ? "bg-pokeblue text-white" : "bg-surface2 text-mut hover:text-ink"
             }`}
           >
             {label}
           </Link>
         ))}
-        <span className="text-mut">Sort:</span>
-        {sortChoices.map(([key, label]) => (
-          <Link
-            key={key}
-            href={`/sets/${slug}?tab=cards&sort=${key}${viewParam}`}
-            className={`rounded-full px-3 py-1 font-medium ${
-              sort === key ? "bg-pokeblue text-white" : "bg-surface2 text-mut hover:text-ink"
-            }`}
-          >
-            {label}
-          </Link>
-        ))}
-        <span className="ml-auto tabular-nums text-mut">{count} cards</span>
+        <span className="ml-auto tabular-nums text-mut">{rows.length} cards</span>
       </div>
-      {tableRows ? (
-        <SetCardsTable rows={tableRows} />
+
+      {rows.length === 0 ? (
+        <p className="rounded-xl border border-line bg-surface p-6 text-mut">
+          {p.q ? `No cards in this set match “${p.q}”.` : "No cards tracked for this set yet."}
+        </p>
+      ) : p.view === "table" ? (
+        <SetCardsTable rows={rows} />
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          {(gridRows ?? []).map((c) => (
-            <CardTile key={c.productId} {...c} />
+          {rows.map((c) => (
+            <CardTile key={c.productId} {...c} delta7Pct={c.d7Pct ?? undefined} market={c.market ?? undefined} />
           ))}
         </div>
       )}
@@ -245,17 +259,17 @@ function SealedTab({ groupId }: { groupId: number }) {
         <section key={t}>
           <h2 className="mb-3 font-display text-lg font-bold">{SEALED_TYPE_LABEL[t]}</h2>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {byType.get(t)!.map((p) => {
-              const packs = typicalPackCount(p.productType, p.name);
+            {byType.get(t)!.map((prod) => {
+              const packs = typicalPackCount(prod.productType, prod.name);
               return (
                 <ProductTile
-                  key={p.productId}
-                  productId={p.productId}
-                  name={p.name}
-                  imageUrl={p.imageUrl}
-                  market={p.market}
-                  perPack={p.market && packs && packs > 1 ? p.market / packs : null}
-                  contents={p.contents}
+                  key={prod.productId}
+                  productId={prod.productId}
+                  name={prod.name}
+                  imageUrl={prod.imageUrl}
+                  market={prod.market}
+                  perPack={prod.market && packs && packs > 1 ? prod.market / packs : null}
+                  contents={prod.contents}
                 />
               );
             })}
@@ -266,12 +280,12 @@ function SealedTab({ groupId }: { groupId: number }) {
         <section>
           <h2 className="mb-3 font-display text-lg font-bold">Accessories</h2>
           <ul className="divide-y divide-line rounded-xl border border-line bg-surface">
-            {byType.get("accessory")!.map((p) => (
-              <li key={p.productId} className="flex items-center justify-between gap-3 px-4 py-2 text-sm">
-                <Link href={`/products/${p.productId}`} className="truncate hover:text-pokeblue">
-                  {p.name}
+            {byType.get("accessory")!.map((prod) => (
+              <li key={prod.productId} className="flex items-center justify-between gap-3 px-4 py-2 text-sm">
+                <Link href={`/products/${prod.productId}`} className="truncate hover:text-pokeblue">
+                  {prod.name}
                 </Link>
-                <span className="font-semibold tabular-nums">{money(p.market)}</span>
+                <span className="font-semibold tabular-nums">{money(prod.market)}</span>
               </li>
             ))}
           </ul>
