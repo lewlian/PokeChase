@@ -8,7 +8,7 @@ import { LoginForm } from "./LoginForm";
 export const metadata: Metadata = { title: "Sign in" };
 
 interface Props {
-  searchParams: Promise<{ next?: string; error?: string }>;
+  searchParams: Promise<{ next?: string; error?: string; reason?: string }>;
 }
 
 export default async function LoginPage({ searchParams }: Props) {
@@ -40,9 +40,10 @@ export default async function LoginPage({ searchParams }: Props) {
         </p>
       </header>
       {sp.error === "auth" ? (
-        <p className="rounded-xl border border-loss/40 bg-surface p-4 text-sm text-loss">
-          Sign-in didn&apos;t complete — please try again.
-        </p>
+        <div className="rounded-xl border border-loss/40 bg-surface p-4 text-sm text-loss">
+          <p>Sign-in didn&apos;t complete — please try again.</p>
+          {sp.reason ? <p className="mt-1 text-xs text-mut">{sp.reason}</p> : null}
+        </div>
       ) : null}
       <LoginForm next={next} />
     </div>
