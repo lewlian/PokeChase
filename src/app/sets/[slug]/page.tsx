@@ -7,7 +7,7 @@ import { MarketSearch } from "@/components/market/MarketSearch";
 import { ProductTile } from "@/components/ProductTile";
 import { SetLogo } from "@/components/SetLogo";
 import { SEALED_TYPE_LABEL, SEALED_TYPE_ORDER, typicalPackCount } from "@/lib/classify";
-import { money, shortDate } from "@/lib/format";
+import { money, shortDate, displayCardName } from "@/lib/format";
 import { sealedForSet, setBySlug } from "@/lib/queries";
 import { cardsForSetWithChange, sparkKey, sparklinesFor } from "@/lib/queries-market";
 import {
@@ -97,7 +97,7 @@ export default async function SetPage({ params, searchParams }: Props) {
           {stats.topCard ? (
             <Stat label="Most expensive card">
               <span className="block max-w-56 truncate" title={stats.topCard.name}>
-                {stats.topCard.name}
+                {displayCardName(stats.topCard.name)}
               </span>
             </Stat>
           ) : null}

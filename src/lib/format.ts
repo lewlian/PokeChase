@@ -48,6 +48,19 @@ export function askPremiumPct(
   return ((ask - market) / market) * 100;
 }
 
+/** Strip an embedded collector number from a product name so titles stay
+ *  clean — the number renders as its own tag. TCGplayer JP (and some EN)
+ *  names look like "Pikachu - 227/S-P" or "Bagon - 057/113 (Delta Species)";
+ *  keep any trailing qualifier, drop the number segment. Names whose dash
+ *  segment isn't number-shaped ("Unown - E") are left untouched. */
+export function displayCardName(name: string): string {
+  const m = name.match(
+    /^(.+?)\s+-\s+#?[A-Za-z]{0,4}\d[\dA-Za-z]*(?:[/.][\dA-Za-z-]+)?\s*(\(.+\))?$/,
+  );
+  if (!m) return name;
+  return m[2] ? `${m[1]} ${m[2]}` : m[1];
+}
+
 /** Extract sortable numeric card number from display number like "199/165" or "TG12/TG30". */
 export function sortNumber(display: string | null | undefined): number | null {
   if (!display) return null;

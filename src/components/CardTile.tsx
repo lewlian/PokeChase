@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { imageAt } from "@/lib/images";
-import { money } from "@/lib/format";
+import { money, displayCardName } from "@/lib/format";
 import { Delta } from "./Delta";
 import { LangChip } from "./LangChip";
+import { NumberTag, RarityTag } from "./CardTags";
 import { TierBadge } from "./TierBadge";
 import type { ChaseTier } from "@/db/schema";
 
@@ -33,20 +34,20 @@ export function CardTile(p: CardTileProps) {
         />
       </div>
       <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold leading-snug">
-            {p.rank ? <span className="mr-1 text-mut">#{p.rank}</span> : null}
-            {p.name}
-          </p>
-          <p className="flex items-start gap-1 text-xs text-mut">
-            <LangChip language={p.language} />
-            <span className="min-w-0">
-              {[p.number, p.rarity, p.setName].filter(Boolean).join(" · ")}
-            </span>
-          </p>
-        </div>
+        <p className="line-clamp-2 min-w-0 text-sm font-semibold leading-snug">
+          {p.rank ? <span className="mr-1 text-mut">#{p.rank}</span> : null}
+          {displayCardName(p.name)}
+        </p>
         {p.tier ? <TierBadge tier={p.tier} /> : null}
       </div>
+      <div className="mt-1 flex flex-wrap items-center gap-1">
+        <LangChip language={p.language} />
+        <NumberTag number={p.number} />
+        <RarityTag rarity={p.rarity} />
+      </div>
+      {p.setName ? (
+        <p className="mt-1 truncate text-xs text-mut">{p.setName}</p>
+      ) : null}
       <div className="mt-auto flex items-baseline justify-between pt-2">
         <span className="text-base font-bold tabular-nums">{money(p.market)}</span>
         <Delta value={p.delta7Pct} label="7d" />

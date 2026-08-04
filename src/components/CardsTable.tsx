@@ -2,9 +2,10 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Delta } from "@/components/Delta";
 import { LangChip } from "@/components/LangChip";
+import { NumberTag, RarityTag } from "@/components/CardTags";
 import { Sparkline } from "@/components/Sparkline";
 import { imageAt } from "@/lib/images";
-import { money } from "@/lib/format";
+import { money, displayCardName } from "@/lib/format";
 
 export interface CardsTableRow {
   productId: number;
@@ -104,14 +105,18 @@ export function CardsTable({
                     className="h-12 w-9 shrink-0 rounded object-contain"
                   />
                   <span className="min-w-0">
-                    <span className="block truncate font-medium">{r.name}</span>
+                    <span className="block truncate font-medium">{displayCardName(r.name)}</span>
                     <span className="flex items-center gap-1 text-xs text-mut">
                       {r.language ? <LangChip language={r.language} /> : null}
+                      <NumberTag number={r.number} />
+                      <RarityTag rarity={r.rarity} />
                       <span className="truncate">
-                        {[r.number, r.rarity, showSet ? r.setName : null]
+                        {[
+                          showSet ? r.setName : null,
+                          r.subType && r.subType !== "Normal" ? r.subType : null,
+                        ]
                           .filter(Boolean)
                           .join(" · ")}
-                        {r.subType && r.subType !== "Normal" ? ` · ${r.subType}` : ""}
                       </span>
                     </span>
                   </span>
