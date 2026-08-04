@@ -1,8 +1,11 @@
 /**
  * Price-history backfill from TCGCSV daily archives (~4 MB each).
  * Default plan: daily for the last 30 days, then weekly back to ~1 year.
- *   npx tsx scripts/backfill-history.ts [--days 30] [--weeks 52]
- * Requires 7zz (brew install sevenzip). Idempotent — existing dates are skipped.
+ *   npx tsx scripts/backfill-history.ts [--days 30] [--weeks 52] [--category 3] [--force]
+ * --category: TCGplayer category to extract (3 = English, 85 = Japanese).
+ * --force: don't skip dates that already have rows (needed when extending an
+ *   existing history to a new category — upserts keep it idempotent).
+ * Requires 7zz (brew install sevenzip). Without --force, covered dates skip.
  */
 import { execFileSync, execSync } from "node:child_process";
 import fs from "node:fs";
@@ -53,16 +56,20 @@ async function main() {
   const argv = process.argv.slice(2);
   const days = Number(argv[argv.indexOf("--days") + 1] || 30);
   const weeks = Number(argv[argv.indexOf("--weeks") + 1] || 52);
+  const category = String(argv[argv.indexOf("--category") + 1] || "3");
+  const force = argv.includes("--force");
   const db = getDb();
 
   await runJob("backfill-history", async () => {
-    const have = new Set(
-      db
-        .all<{ date: string }>(sql`select distinct date from price_snapshots`)
-        .map((r) => r.date),
-    );
+    const have = force
+      ? new Set<string>()
+      : new Set(
+          db
+            .all<{ date: string }>(sql`select distinct date from price_snapshots`)
+            .map((r) => r.date),
+        );
     const dates = planDates(days, weeks).filter((d) => !have.has(d));
-    console.log(`  dates to backfill: ${dates.length}`);
+    console.log(`  category ${category}, dates to backfill: ${dates.length}`);
 
     const sevenZip = find7z();
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "pokechase-backfill-"));
@@ -82,18 +89,27 @@ async function main() {
         }
         fs.writeFileSync(archivePath, Buffer.from(await res.arrayBuffer()));
         const outDir = path.join(tmp, date);
-        // extract only Pokémon (category 3) price files
-        execFileSync(sevenZip, ["x", archivePath, `-o${outDir}`, `${date}/3/*`, "-y"], {
-          stdio: "pipe",
-        });
-        const groupsDir = path.join(outDir, date, "3");
-        for (const groupId of fs.readdirSync(groupsDir)) {
-          const pricesFile = path.join(groupsDir, groupId, "prices");
-          if (!fs.existsSync(pricesFile)) continue;
-          const parsed = JSON.parse(
-            fs.readFileSync(pricesFile, "utf8"),
-          ) as TcgResponse<TcgPrice>;
-          written += insertPriceRows(db, parsed.results, date);
+        // extract only the requested category's price files; old archives
+        // predate category 85, so a missing path just means no data that day
+        try {
+          execFileSync(sevenZip, ["x", archivePath, `-o${outDir}`, `${date}/${category}/*`, "-y"], {
+            stdio: "pipe",
+          });
+        } catch {
+          console.warn(`  ${date}: category ${category} not in archive`);
+          fs.rmSync(archivePath, { force: true });
+          continue;
+        }
+        const groupsDir = path.join(outDir, date, category);
+        if (fs.existsSync(groupsDir)) {
+          for (const groupId of fs.readdirSync(groupsDir)) {
+            const pricesFile = path.join(groupsDir, groupId, "prices");
+            if (!fs.existsSync(pricesFile)) continue;
+            const parsed = JSON.parse(
+              fs.readFileSync(pricesFile, "utf8"),
+            ) as TcgResponse<TcgPrice>;
+            written += insertPriceRows(db, parsed.results, date);
+          }
         }
         fs.rmSync(outDir, { recursive: true, force: true });
         fs.rmSync(archivePath, { force: true });

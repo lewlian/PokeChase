@@ -57,6 +57,31 @@ describe("eraForGroup", () => {
     ["SWSH: Sword & Shield Promo Cards", "2020-02-07", "sword-shield"],
     ["Jumbo Cards", null, "other"],
     ["World Championship Decks", "2005-08-01", "other"],
+    // Japanese sets (full category-85 catalog)
+    ["Expansion Pack", "1996-10-20", "original"],
+    ["Expansion Pack (No Rarity)", "1996-10-20", "original"],
+    ["Pokemon Jungle", "1997-03-05", "original"],
+    ["Vending Machine cards Series 3 (Green)", "2026-08-03", "original"], // modern catalog date
+    ["World Hobby Fair", "2026-08-03", "other"],
+    ["The Town on No Map", "2002-01-01", "e-card"],
+    ["S12a: VSTAR Universe", "2022-12-02", "sword-shield"],
+    ["S4a: Shiny Star V", "2020-11-20", "sword-shield"],
+    ["S-P Promotional Cards", "2019-12-01", "sword-shield"],
+    ["SM8b: GX Ultra Shiny", "2018-11-02", "sun-moon"],
+    ["SV2a: Pokemon Card 151", "2023-06-16", "scarlet-violet"],
+    ["SV-P Promotional Cards", "2023-01-20", "scarlet-violet"],
+    ["BW5: Dragon Blade", "2012-03-16", "black-white"],
+    ["XY11: Cruel Traitor", "2016-06-17", "xy"],
+    ["M6: Storm Emeralda", "2026-07-31", "mega-evolution"],
+    ["MEE: Starter Set ex Eevee ex", "2025-10-10", "mega-evolution"],
+    // JP vintage promo/event sets carry a modern catalog-entry date
+    ["CoroCoro Promotional Cards", "2026-08-03", "other"],
+    ["Battle Road", "2026-08-03", "other"],
+    ["How I Became a Pokemon Card", "2026-08-03", "other"],
+    ["Unnumbered Promotional cards", "2026-08-03", "other"],
+    ["Pokemon Card Design Contest", "2026-08-03", "other"],
+    ["DPt-P Promotional Cards", "2008-01-01", "diamond-pearl"],
+    ["XY-P Promotional Cards", "2014-01-01", "xy"],
   ];
 
   it.each(cases)("%s → %s", (name, publishedOn, expected) => {

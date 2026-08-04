@@ -21,6 +21,8 @@
     "ingest:graded": "tsx scripts/ingest-graded.ts",
     "ingest:jp": "tsx scripts/ingest-jp.ts",
     "ingest:bootstrap": "npm run db:migrate && tsx scripts/ingest-catalog.ts && tsx scripts/ingest-jp.ts && tsx scripts/ingest-prices.ts && tsx scripts/seed-contents.ts && tsx scripts/enrich-logos.ts && tsx scripts/backfill-history.ts && tsx scripts/compute-chase.ts",
+    "ingest:jp:full": "tsx scripts/ingest-jp.ts && tsx scripts/backfill-history.ts --category 85 --days 30 --weeks 52 --force && tsx scripts/compute-chase.ts",
+    "ingest:jp:full:bg": "sh -c \"nohup npm run ingest:jp:full > /tmp/jp-full.log 2>&1 & echo jp-full started, log: /tmp/jp-full.log\"",
     "ingest:bootstrap:bg": "sh -c \"nohup npm run ingest:bootstrap > /tmp/bootstrap.log 2>&1 & echo bootstrap started, log: /tmp/bootstrap.log\""
   },
   "dependencies": {

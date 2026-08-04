@@ -40,11 +40,17 @@ interface GroupLike {
 const NAME_RULES: Array<[RegExp, string]> = [
   // Modern prefixed names: "ME05: Pitch Black", "SV08: Surging Sparks", "SWSH12: ..."
   [/^ME\d*\s*:|^ME:\s/i, "mega-evolution"],
-  // Japanese Mega-era sets: "M5: Abyss Eye", "M6: Storm Emeralda", "M2a: …"
+  // Japanese Mega-era sets: "M5: Abyss Eye", "M6: Storm Emeralda", "M2a: …",
+  // plus lettered starter decks "MEE: Starter Set ex Eevee ex" / MEM / MEZ
   [/^M\d+[a-z]?\s*:/i, "mega-evolution"],
-  [/^SV\d*\s*:|^SV:\s/i, "scarlet-violet"],
+  [/^ME[A-Z]\s*:/, "mega-evolution"],
+  [/^M-P\b/i, "mega-evolution"],
+  [/^SV\d*[a-z]?\s*:|^SV:\s|^SV-P\b/i, "scarlet-violet"],
   [/^SWSH\d*\s*:|^SWSH:\s/i, "sword-shield"],
-  [/^SM\s*(\d+|-)?\s*:|^SM:\s/i, "sun-moon"],
+  // Japanese Sword & Shield sets: "S12a: VSTAR Universe", "S4a: Shiny Star V",
+  // "S-P Promotional" (must come after SM/SV rules; ^S\d can't match those)
+  [/^S\d+[a-z]?\s*:|^S-P\b/i, "sword-shield"],
+  [/^SM\s*(\d+|-)?[a-z+]?\s*:|^SM:\s|^SM-P\b/i, "sun-moon"],
 
   // Original series
   [/^base set(\s*2)?$|^jungle$|^fossil$|^team rocket$|^gym (heroes|challenge)$/i, "original"],
@@ -61,8 +67,8 @@ const NAME_RULES: Array<[RegExp, string]> = [
   [/^diamond and pearl|^dp[ :]/i, "diamond-pearl"],
   [/^platinum/i, "platinum"],
   [/^heartgold soulsilver|^hgss|^hs—|^call of legends$/i, "hgss"],
-  // BW / XY
-  [/^black and white|^bw[ :]/i, "black-white"],
+  // BW / XY (JP sets use bare numbered prefixes: "BW5: Dragon Blade", "XY11: …")
+  [/^black and white|^bw[\d :]/i, "black-white"],
   [/^xy/i, "xy"],
   [/^(generations|double crisis)$/i, "xy"],
   // SM extras without prefix
@@ -73,20 +79,31 @@ const NAME_RULES: Array<[RegExp, string]> = [
   [/^sword and shield/i, "sword-shield"],
   // SV extras
   [/^(scarlet and violet|paldean fates|pokemon card 151)/i, "scarlet-violet"],
+  // Japanese vintage sets that TCGplayer catalogs with a modern entry date —
+  // name rules must catch them before the year fallback misfiles them
+  [/^expansion pack|vending machine|^pokemon (jungle|fossil)$|quick starter|^rocket gang|^gym (booster|expansion)/i, "original"],
+  [/^web$|^vs\b|^e-card|^the town on no map|^wind from the sea|^split earth|^mysterious mountains/i, "e-card"],
+  // Japanese era-prefixed promo sets stay with their era
+  [/^dpt?-p\b/i, "diamond-pearl"],
+  [/^bw-p\b/i, "black-white"],
+  [/^xy-p\b/i, "xy"],
   // Catch-all promo/misc buckets → other (before year fallback so
-  // "McDonald's Collection 2022" etc. lands in Other, matching hobby convention)
-  [/mcdonald|trick or trade|black star promo|^promo|miscellaneous|jumbo|world championship|trainer kit|league|deck exclusives|alternate art promos/i, "other"],
+  // "McDonald's Collection 2022" etc. lands in Other, matching hobby convention;
+  // also catches JP vintage promo/event sets that TCGplayer catalogs with a
+  // modern entry date — CoroCoro, Battle Road, contest cards, …)
+  [/mcdonald|trick or trade|black star promo|^promo|promotional card|miscellaneous|jumbo|world championship|trainer kit|league|deck exclusives|alternate art promos|world hobby fair|fan club|shikishi|battle road|champion road|corocoro|design contest|photo contest|competition|master battle set|how i became|^unnumbered/i, "other"],
 ];
 
 function yearOf(g: GroupLike): number | null {
   if (!g.publishedOn) return null;
   const y = Number(g.publishedOn.slice(0, 4));
-  return Number.isFinite(y) && y >= 1998 ? y : null;
+  // 1996-1997 covers the Japanese originals (Expansion Pack, Jungle, Fossil)
+  return Number.isFinite(y) && y >= 1996 ? y : null;
 }
 
 /** Release-year fallback (main line eras by year). */
 const YEAR_FALLBACK: Array<[number, number, string]> = [
-  [1998, 1999, "original"],
+  [1996, 1999, "original"],
   [2000, 2001, "neo"],
   [2002, 2002, "e-card"],
   [2003, 2006, "ex"],
