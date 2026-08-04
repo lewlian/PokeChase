@@ -119,5 +119,8 @@ export function ext(p: TcgProduct, name: string): string | null {
 }
 
 export function isCard(p: TcgProduct): boolean {
-  return ext(p, "Number") !== null;
+  // Modern cards carry a collector Number; vintage Japanese cards (1996-98)
+  // are unnumbered but still have card-shaped data — CardType is present on
+  // every card (Pokémon/Trainer/Energy) and never on sealed product.
+  return ext(p, "Number") !== null || ext(p, "CardType") !== null;
 }

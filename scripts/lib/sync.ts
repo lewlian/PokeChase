@@ -41,6 +41,8 @@ export async function upsertGroupProducts(
         .insert(tables.cards)
         .values(row)
         .onConflictDoUpdate({ target: tables.cards.productId, set: row });
+      // classification can improve between syncs — drop any stale twin
+      await db.delete(tables.sealedProducts).where(eq(tables.sealedProducts.productId, p.productId));
     } else {
       sealed++;
       const row = {
@@ -56,6 +58,7 @@ export async function upsertGroupProducts(
         .insert(tables.sealedProducts)
         .values(row)
         .onConflictDoUpdate({ target: tables.sealedProducts.productId, set: row });
+      await db.delete(tables.cards).where(eq(tables.cards.productId, p.productId));
     }
   }
   await db.update(tables.sets).set({ cardCount: cards }).where(eq(tables.sets.groupId, groupId));
