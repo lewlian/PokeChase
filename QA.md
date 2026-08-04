@@ -232,3 +232,19 @@ https://pokechase.up.railway.app:
   test for this case).
 - QA data removed afterwards; QA accounts remain in Supabase Auth for the
   owner to delete.
+
+## Addendum — full Japanese catalog (2026-08-04)
+
+- Ingested all 454 TCGplayer Pokemon-Japan (category 85) sets — 1996
+  Expansion Pack through M6a — with a 1-year price backfill (78 archive
+  dates, 1,970,777 JP rows) and the same nightly refresh as English.
+  Production: 671 sets / 57,828 cards / 5.6M snapshots; chase pool 13,899
+  (EN+JP). Fixed en route: JP era prefixes + vintage-promo catalog-date
+  misfiles (remap-eras.ts re-applies rules), JP/EN slug collisions (-jp
+  suffix), and unnumbered 1996-98 JP cards misclassified as sealed
+  (isCard now keys on CardType; sync drops stale cross-table twins).
+  Verified live: Expansion Pack shows 102 cards with the $800 unnumbered
+  Charizard; "pikachu 227" surfaces the JP 227/S-P at $1,799 beside the EN
+  print at $1,600, chipped by language. Chinese: no price source exists
+  (TCGplayer has no CN category; TCGdex zh is catalog-only) — deliberately
+  not ingested.
